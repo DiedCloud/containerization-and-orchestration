@@ -52,3 +52,29 @@ extraScrapeConfigs: |
         target_label: service
       - source_labels: [__meta_kubernetes_pod_name]
         target_label: pod
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: api-health
+        rules:
+          - alert: ApiHighErrorRate
+            expr: |
+              (
+                sum(rate(http_requests_total{job="api",source=~"client|load_generator",code=~"5.."}[5m]))
+                /
+                sum(rate(http_requests_total{job="api",source=~"client|load_generator"}[5m]))
+                > 0.05
+              )
+              and
+              (
+                sum(increase(http_requests_total{job="api",source=~"client|load_generator"}[5m]))
+                >= 20
+              )
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "У api более 5% ответов 5xx"
+              description: "Проверь ошибки в Loki и связанные трейсы в Jaeger."

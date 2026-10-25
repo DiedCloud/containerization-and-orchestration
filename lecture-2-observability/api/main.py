@@ -100,17 +100,17 @@ log = logging.getLogger(SERVICE_NAME)
 http_requests_total = Counter(
     "http_requests_total",
     "Total HTTP requests handled.",
-    ["method", "route", "code"],
+    ["method", "route", "code", "source"],
 )
 http_errors_total = Counter(
     "http_errors_total",
     "Total HTTP requests that ended in a 5xx.",
-    ["method", "route", "code"],
+    ["method", "route", "code", "source"],
 )
 http_request_duration_seconds = Histogram(
     "http_request_duration_seconds",
     "HTTP request latency in seconds.",
-    ["method", "route"],
+    ["method", "route", "source"],
     # Buckets are the point of a histogram: they let Prometheus compute any
     # quantile (p95, p99) later. A stored average could never do that.
     buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0, 3.0, 5.0),
@@ -140,6 +140,15 @@ class RequestMetricsMiddleware:
         method = scope.get("method", "GET")
         path = scope.get("path", "")
         route = path if path in ROUTE_LABELS else "other"
+        headers = dict(scope.get("headers", []))
+        # Lab classification only, not a security boundary: clients can spoof
+        # headers. Never put arbitrary header values into metric labels.
+        if path == "/health" and headers.get(b"user-agent", b"").startswith(b"kube-probe/"):
+            source = "kubernetes_probe"
+        elif headers.get(b"x-lab-traffic-source") == b"load_generator":
+            source = "load_generator"
+        else:
+            source = "client"
         started = time.perf_counter()
         status = {"code": 500}
 
@@ -153,16 +162,17 @@ class RequestMetricsMiddleware:
         finally:
             duration = time.perf_counter() - started
             code = str(status["code"])
-            http_requests_total.labels(method, route, code).inc()
-            http_request_duration_seconds.labels(method, route).observe(duration)
+            http_requests_total.labels(method, route, code, source).inc()
+            http_request_duration_seconds.labels(method, route, source).observe(duration)
             if code.startswith("5"):
-                http_errors_total.labels(method, route, code).inc()
+                http_errors_total.labels(method, route, code, source).inc()
             log.info(
                 "request",
                 extra={
                     "extra_fields": {
                         "method": method,
                         "route": route,
+                        "source": source,
                         "code": status["code"],
                         "duration_ms": round(duration * 1000, 2),
                     }
@@ -220,7 +230,11 @@ async def slow():
 @app.get("/load")
 async def load(n: int = 50):
     base = f"http://127.0.0.1:{PORT}"
-    async with httpx.AsyncClient(base_url=base, timeout=10.0) as client:
+    async with httpx.AsyncClient(
+        base_url=base,
+        timeout=10.0,
+        headers={"X-Lab-Traffic-Source": "load_generator"},
+    ) as client:
         results = await asyncio.gather(
             *(client.get("/health") for _ in range(n)), return_exceptions=True
         )

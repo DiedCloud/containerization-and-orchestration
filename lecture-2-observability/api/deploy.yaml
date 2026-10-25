@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: api:lab2
+          image: api:lab2-source
           # kind already has the image in its own containerd; never try to pull.
           imagePullPolicy: IfNotPresent
           ports:
