@@ -1,0 +1,14 @@
+# Versions are pinned in pairs on purpose:
+#   opentelemetry-sdk/api 1.29.x  <->  instrumentation 0.50bN
+# Mixing generations of the two lines is the usual cause of
+# "ImportError: cannot import name ... from opentelemetry.trace".
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+httpx==0.28.1
+prometheus-client==0.21.1
+
+opentelemetry-api==1.29.0
+opentelemetry-sdk==1.29.0
+opentelemetry-exporter-otlp-proto-grpc==1.29.0
+opentelemetry-instrumentation-fastapi==0.50b0
+opentelemetry-instrumentation-httpx==0.50b0

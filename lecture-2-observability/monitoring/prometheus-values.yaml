@@ -1,0 +1,45 @@
+# Prometheus only. Grafana arrives in the next stage, Alertmanager in the
+# alerting stage — values are split so each piece can be explained on its own.
+alertmanager:
+  enabled: false
+pushgateway:
+  enabled: false
+
+server:
+  # 6h is plenty for a lab; Prometheus' local TSDB is a single node, no HA.
+  retention: 6h
+  # emptyDir: metrics die with the pod. Acceptable for the lab, not for prod.
+  persistentVolume:
+    enabled: false
+
+# NOTE: in the prometheus-community/prometheus chart this key is top-level,
+# not under `server:`. It is a string that gets spliced into scrape_configs.
+extraScrapeConfigs: |
+  - job_name: api
+    # Service discovery: ask the API server for Endpoints/EndpointSlices.
+    # role: endpoints enumerates <service, port> pairs that have ready pods.
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+
+    # Relabeling happens BEFORE the first scrape: it rewrites the target
+    # definition (__address__, labels), it does not touch metric labels.
+    relabel_configs:
+      # Keep only the endpoints of the `api` Service (drop kubernetes, etc.).
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: api
+      # Keep only the named port `http` (the Service has exactly one).
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: http
+      # Copy discovery metadata into real target labels, so the metric
+      # http_requests_total arrives tagged with pod/service/namespace.
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
