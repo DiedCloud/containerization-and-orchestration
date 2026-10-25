@@ -78,3 +78,37 @@ serverFiles:
             annotations:
               summary: "У api более 5% ответов 5xx"
               description: "Проверь ошибки в Loki и связанные трейсы в Jaeger."
+          - alert: ApiHighLatency
+            expr: |
+              (
+                histogram_quantile(
+                  0.95,
+                  sum by (le) (
+                    rate(http_request_duration_seconds_bucket{job="api",source=~"client|load_generator"}[5m])
+                  )
+                ) > 1
+              )
+              and
+              (
+                sum(increase(http_request_duration_seconds_count{job="api",source=~"client|load_generator"}[5m]))
+                >= 20
+              )
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "p95 задержки api превышает 1 секунду"
+              description: "Найди медленные запросы в Jaeger и проверь длительности вложенных span."
+          - alert: ApiNoHealthyTargets
+            expr: |
+              (sum(up{job="api"}) == 0)
+              or
+              absent(up{job="api"})
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "У api нет доступных целей сбора метрик"
+              description: "Проверь поды, Service endpoints, discovery и доступность /metrics. Подтверди пользовательскую недоступность отдельно."
