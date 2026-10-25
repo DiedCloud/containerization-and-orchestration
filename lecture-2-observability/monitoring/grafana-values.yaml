@@ -27,3 +27,11 @@ datasources:
           # Tell Grafana the scrape interval so $__rate_interval and the
           # query editor pick sane ranges.
           timeInterval: 15s
+      - name: Loki
+        type: loki
+        access: proxy
+        # Same store, different query language (LogQL). Grafana keeps metrics
+        # and logs side by side only because both data sources live here.
+        url: http://loki.monitoring.svc.cluster.local:3100
+        jsonData:
+          maxLines: 1000
