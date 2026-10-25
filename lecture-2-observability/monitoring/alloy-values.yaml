@@ -72,3 +72,9 @@ alloy:
           url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
         }
       }
+# Для офлайн-переноса через kind используем локально доступный тег.
+configReloader:
+  image:
+    tag: v0.94.2
+    digest: ""
+    pullPolicy: IfNotPresent
