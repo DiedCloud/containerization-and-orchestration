@@ -23,9 +23,12 @@ loki:
 
 singleBinary:
   replicas: 1
-  # emptyDir: logs live only as long as the pod. Fine for a lab.
+  # Loki must write somewhere: the container root FS is read-only, and chunks,
+  # the TSDB index and ruler state all land in /var/loki. Without a volume the
+  # pod dies with "mkdir /var/loki: read-only file system".
   persistence:
-    enabled: false
+    enabled: true
+    size: 2Gi
 
 # The chart defaults to SimpleScalable; these three hold the scalable-mode
 # microservices that we do not want at all in single-binary mode.
