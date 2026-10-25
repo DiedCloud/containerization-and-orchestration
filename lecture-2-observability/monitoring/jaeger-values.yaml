@@ -1,0 +1,35 @@
+# Jaeger chart 4.16.1 / Jaeger v2: collector and query in one process.
+# In-memory storage deliberately loses traces on restart; lab use only.
+jaeger:
+  replicas: 1
+
+userconfig:
+  extensions:
+    jaeger_storage:
+      backends:
+        memory_store:
+          memory:
+            max_traces: 10000
+    jaeger_query:
+      storage:
+        traces: memory_store
+    healthcheckv2:
+      use_v2: true
+      http:
+        endpoint: 0.0.0.0:13133
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+  exporters:
+    jaeger_storage_exporter:
+      trace_storage: memory_store
+  service:
+    extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+    pipelines:
+      traces:
+        receivers: [otlp]
+        exporters: [jaeger_storage_exporter]
