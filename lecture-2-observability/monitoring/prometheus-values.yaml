@@ -8,6 +8,11 @@ prometheus-pushgateway:
   enabled: false
 
 server:
+  # Alertmanager is a separate Helm release, not this chart's bundled subchart.
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager.monitoring.svc.cluster.local:9093
   # 6h is plenty for a lab; Prometheus' local TSDB is a single node, no HA.
   retention: 6h
   # emptyDir: metrics die with the pod. Acceptable for the lab, not for prod.

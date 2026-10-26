@@ -1,0 +1,20 @@
+# Standalone release; keep the Prometheus chart's bundled Alertmanager disabled.
+replicaCount: 1
+persistence:
+  enabled: true
+  size: 1Gi
+
+config:
+  enabled: true
+  route:
+    receiver: local-webhook
+    # Group related alerts for the same service into one notification.
+    group_by: [service]
+    group_wait: 10s
+    group_interval: 30s
+    repeat_interval: 5m
+  receivers:
+    - name: local-webhook
+      webhook_configs:
+        - url: http://alert-receiver.monitoring.svc.cluster.local:8080/alerts
+          send_resolved: true
