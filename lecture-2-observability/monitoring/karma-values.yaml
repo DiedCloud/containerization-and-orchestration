@@ -1,0 +1,20 @@
+# Karma reads Alertmanager's API; it does not evaluate Prometheus rules.
+replicaCount: 1
+service:
+  type: ClusterIP
+  port: 80
+
+configMap:
+  enabled: true
+  rawConfig:
+    listen:
+      address: 0.0.0.0
+      port: 8080
+    alertmanager:
+      interval: 10s
+      servers:
+        - name: lab2
+          uri: http://alertmanager.monitoring.svc.cluster.local:9093
+          timeout: 10s
+          # Browser connects only to Karma; cluster DNS is resolved server-side.
+          proxy: true
