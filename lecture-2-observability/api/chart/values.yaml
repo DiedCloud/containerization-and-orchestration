@@ -1,0 +1,3 @@
+replicaCount: 3
+image: api:lab2-source
+otlpEndpoint: http://jaeger.monitoring.svc.cluster.local:4317

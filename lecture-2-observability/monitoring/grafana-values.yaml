@@ -17,6 +17,7 @@ datasources:
     apiVersion: 1
     datasources:
       - name: Prometheus
+        uid: prometheus
         type: prometheus
         # access: proxy means the Grafana server queries Prometheus, not the
         # browser. That is why the URL is a cluster-internal DNS name.
@@ -35,3 +36,16 @@ datasources:
         url: http://loki.monitoring.svc.cluster.local:3100
         jsonData:
           maxLines: 1000
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: Labs
+        type: file
+        disableDeletion: true
+        allowUiUpdates: false
+        options:
+          path: /var/lib/grafana/dashboards/default
