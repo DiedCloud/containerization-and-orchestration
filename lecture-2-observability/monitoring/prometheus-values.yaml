@@ -1,0 +1,119 @@
+# Prometheus only. Grafana arrives in the next stage, Alertmanager in the
+# alerting stage — values are split so each piece can be explained on its own.
+alertmanager:
+  enabled: false
+# Careful: pushgateway is a *subchart* here, so the key is its full name.
+# A plain `pushgateway.enabled: false` is silently ignored (as I just found out).
+prometheus-pushgateway:
+  enabled: false
+
+server:
+  # Alertmanager is a separate Helm release, not this chart's bundled subchart.
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager.monitoring.svc.cluster.local:9093
+  # 6h is plenty for a lab; Prometheus' local TSDB is a single node, no HA.
+  retention: 6h
+  # emptyDir: metrics die with the pod. Acceptable for the lab, not for prod.
+  persistentVolume:
+    enabled: false
+  global:
+    # The chart default is 1m. That makes rate(...[1m]) come back empty: rate()
+    # needs at least two samples *inside* the range, and with one sample per
+    # minute the window usually holds a single one. 15s is the usual resolution
+    # for RED dashboards (and keeps the rule "range >= 4x scrape_interval").
+    scrape_interval: 15s
+    evaluation_interval: 15s
+
+# NOTE: in the prometheus-community/prometheus chart this key is top-level,
+# not under `server:`. It is a string that gets spliced into scrape_configs.
+extraScrapeConfigs: |
+  - job_name: api
+    # Service discovery: ask the API server for Endpoints/EndpointSlices.
+    # role: endpoints enumerates <service, port> pairs that have ready pods.
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+
+    # Relabeling happens BEFORE the first scrape: it rewrites the target
+    # definition (__address__, labels), it does not touch metric labels.
+    relabel_configs:
+      # Keep only the endpoints of the `api` Service (drop kubernetes, etc.).
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: api
+      # Keep only the named port `http` (the Service has exactly one).
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: http
+      # Copy discovery metadata into real target labels, so the metric
+      # http_requests_total arrives tagged with pod/service/namespace.
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: service
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: api-health
+        rules:
+          - alert: ApiHighErrorRate
+            expr: |
+              (
+                sum(rate(http_requests_total{job="api",source=~"client|load_generator",code=~"5.."}[5m]))
+                /
+                sum(rate(http_requests_total{job="api",source=~"client|load_generator"}[5m]))
+                > 0.05
+              )
+              and
+              (
+                sum(increase(http_requests_total{job="api",source=~"client|load_generator"}[5m]))
+                >= 20
+              )
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "У api более 5% ответов 5xx"
+              description: "Проверь ошибки в Loki и связанные трейсы в Jaeger."
+          - alert: ApiHighLatency
+            expr: |
+              (
+                histogram_quantile(
+                  0.95,
+                  sum by (le) (
+                    rate(http_request_duration_seconds_bucket{job="api",source=~"client|load_generator"}[5m])
+                  )
+                ) > 1
+              )
+              and
+              (
+                sum(increase(http_request_duration_seconds_count{job="api",source=~"client|load_generator"}[5m]))
+                >= 20
+              )
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "p95 задержки api превышает 1 секунду"
+              description: "Найди медленные запросы в Jaeger и проверь длительности вложенных span."
+          - alert: ApiNoHealthyTargets
+            expr: |
+              (sum(up{job="api"}) == 0)
+              or
+              absent(up{job="api"})
+            for: 2m
+            labels:
+              severity: critical
+              service: api
+            annotations:
+              summary: "У api нет доступных целей сбора метрик"
+              description: "Проверь поды, Service endpoints, discovery и доступность /metrics. Подтверди пользовательскую недоступность отдельно."

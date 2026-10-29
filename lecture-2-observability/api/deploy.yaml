@@ -1,0 +1,68 @@
+# Minimal workload so the service is reachable inside the cluster.
+# The monitoring stack itself will be installed via Helm, not from this file.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: api:lab2-source
+          # kind already has the image in its own containerd; never try to pull.
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: OTEL_SERVICE_NAME
+              value: api
+            # Jaeger does not exist yet (Part 3) — the exporter just fails to
+            # connect and retries in the background. Non-fatal by design.
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger.monitoring.svc.cluster.local:4317
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  type: ClusterIP
+  selector:
+    app: api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

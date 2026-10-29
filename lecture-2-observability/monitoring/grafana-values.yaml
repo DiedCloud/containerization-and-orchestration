@@ -1,0 +1,51 @@
+# Grafana only. Deliberately installed as a separate release from Prometheus:
+# one release per component keeps upgrades and rollbacks independent.
+replicas: 1
+
+# Lab shortcut. In real life the admin password comes from an existing Secret,
+# never from values committed to git.
+adminPassword: admin
+
+service:
+  type: ClusterIP
+
+# Provisioned as code instead of clicking in the UI. Each key below becomes a
+# file under /etc/grafana/provisioning/datasources inside the pod, so the data
+# source survives pod recreation and can be reviewed like any other config.
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        uid: prometheus
+        type: prometheus
+        # access: proxy means the Grafana server queries Prometheus, not the
+        # browser. That is why the URL is a cluster-internal DNS name.
+        access: proxy
+        url: http://prometheus-server.monitoring.svc.cluster.local
+        isDefault: true
+        jsonData:
+          # Tell Grafana the scrape interval so $__rate_interval and the
+          # query editor pick sane ranges.
+          timeInterval: 15s
+      - name: Loki
+        type: loki
+        access: proxy
+        # Same store, different query language (LogQL). Grafana keeps metrics
+        # and logs side by side only because both data sources live here.
+        url: http://loki.monitoring.svc.cluster.local:3100
+        jsonData:
+          maxLines: 1000
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        folder: Labs
+        type: file
+        disableDeletion: true
+        allowUiUpdates: false
+        options:
+          path: /var/lib/grafana/dashboards/default
