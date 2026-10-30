@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 platform_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-kube_context="${KUBE_CONTEXT:-kind-lab2}"
+cluster_name="${KIND_CLUSTER:-lab2}"
+kube_context="${KUBE_CONTEXT:-kind-${cluster_name}}"
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm upgrade --install shop-monitoring-crds prometheus-community/prometheus-operator-crds \
   --version 32.0.2 --kube-context "$kube_context" -n monitoring \

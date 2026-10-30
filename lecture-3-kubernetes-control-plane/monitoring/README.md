@@ -1,108 +1,77 @@
-# Часть 5 — мониторинг поверх Лабы 2
+# Мониторинг shop
 
-Использую прежние releases `prometheus`, `grafana` и `alertmanager` в
-`monitoring`. Второго Prometheus и нового kube-prometheus-stack нет.
-Установлен только официальный CRD-чарт
-`prometheus-community/prometheus-operator-crds` **32.0.2** (v0.94.2), причём
-включены лишь ServiceMonitor и PrometheusRule. Upstream-манифесты не копируются.
+Использую Prometheus, Grafana и Alertmanager из Лабы 2. Второй стек не
+разворачивается. Чарт shop создаёт два ServiceMonitor, PrometheusRule и
+ConfigMap с [дашбордом](../shop/dashboards/shop.json).
 
-## Как подключены объекты чарта
+## Подключение к существующему стеку
 
-Обычный Prometheus из Лабы 2 не читает эти CRD сам. Поэтому
-`scripts/sync-monitoring.py` — явный одноразовый адаптер, а не Operator:
+В Лабе 2 установлен обычный Prometheus без Operator: сам он не читает CR.
+Официальный чарт prometheus-operator-crds 32.0.2 устанавливает только нужные
+определения ServiceMonitor и PrometheusRule. `scripts/sync-monitoring.py`
+читает их, преобразует в настройки прежних Helm releases Prometheus 29.38.1
+и Grafana 10.5.15, сохраняя jobs, правила, datasource и RED-дашборд Лабы 2.
 
-1. Читает два ServiceMonitor и PrometheusRule release `shop` из Kubernetes.
-2. Преобразует matchLabels, namespaceSelector и HTTP endpoints в scrape jobs.
-   В имени job остаётся источник, например `serviceMonitor/shop/shop-api/0`.
-   ServiceMonitor выбирает Service по меткам и именованному порту `http`.
-3. Копирует группы правил из PrometheusRule, проверяет их через `promtool`
-   и добавляет к прежним правилам Лабы 2. Ручной второй копии алертов нет.
-4. Делает upgrade прежнего Prometheus с `--reuse-values` и закреплённой
-   версией **29.38.1**. Старые scrape jobs, правила и Alertmanager сохраняются.
-5. Подключает ConfigMap `shop-dashboard`, созданный нашим чартом в
-   `monitoring`, через нового file provider прежней Grafana **10.5.15**.
-   Существующие datasource и RED-дашборд сохраняются.
+ServiceMonitor выбирает Service по меткам и именованному порту http.
+Prometheus обнаруживает endpoints и собирает метрики каждой реплики раз в
+15 секунд. Источник трёх алертов — PrometheusRule. Адаптер проверяет правила
+через promtool, затем сверяет действующие правила Prometheus и дашборд Grafana
+через API. Неизменившиеся настройки не создают новых Helm-ревизий.
 
-Скрипт поддерживает используемое в этой лабе подмножество ServiceMonitor,
-проверяет неподдерживаемые настройки и не является постоянно работающим
-контроллером. После изменения CR нужно повторить синхронизацию. Изменения
-Pod и endpoints обнаруживаются самим Prometheus автоматически.
-
-Включение на уже работающем shop:
+Установка приложения уже включает синхронизацию. Для обновления и rollback
+используется `platform/manage-shop.sh`; после прямого изменения CR или вызова
+Helm адаптер нужно запустить явно:
 
 ```bash
-bash lecture-3-kubernetes-control-plane/platform/install-monitoring.sh
+python3 lecture-3-kubernetes-control-plane/scripts/sync-monitoring.py --context kind-lab2
 ```
 
-При установке с нуля `platform/install-shop.sh` также ставит CRD и запускает
-адаптер. Предпосылка — работающий стек Лабы 2 и оператор PostgreSQL.
-Сгенерированные overrides и резервные копии старых values хранятся только
-в исключённой папке `artifacts.local/05-monitoring`.
+Это одноразовый адаптер с поддержкой используемых полей CR, а не постоянно
+работающий контроллер. Изменения endpoints Prometheus обнаруживает сам.
 
-## Метрики и дашборд
+## Дашборд и алерты
 
-У API собираются счётчик запросов и гистограмма длительности, у worker —
-обработанные заказы, ошибки и время последнего успешного опроса БД.
-Scrape выполняется раз в 15 секунд с каждой реплики: **3 API + 2 worker**.
+В папке Labs существующей Grafana доступен `Shop — API и worker`, UID
+`shop-platform`. Восемь панелей показывают доступные scrape-цели, firing
+alerts, RPS, долю 5xx, p95, скорость обработки и возраст успешного опроса БД.
+Из пользовательских RED-запросов исключён /health. p95 без трафика и heartbeat
+при отсутствии всех worker могут показывать No data; это не нулевое значение.
 
-Дашборд [shop.json](../shop/dashboards/shop.json), UID `shop-platform`,
-расположен в папке `Labs` существующей Grafana. Восемь панелей:
-доступность API и worker, firing alerts, RPS, доля 5xx, p95, скорость обработки
-заказов и возраст успешного опроса БД. В пользовательских RED-запросах
-исключён `/health`, поэтому Kubernetes probes не занижают долю ошибок.
-Доля ошибок использует единицу `percentunit`.
+| Алерт | Условие и причина |
+| --- | --- |
+| `ShopApiNoHealthyTargets` | Ни одной доступной scrape-цели API или исчезновение всех рядов up в течение 30 секунд. Проверить Pod, Service, /metrics, затем пользовательскую доступность. |
+| `ShopApiHighErrorRate` | Более 5% ответов 5xx за 2 минуты при минимум 20 пользовательских запросах, условие держится 30 секунд. Выявляет ошибки API и зависимость от БД; probes исключены. |
+| `ShopWorkerStalled` | Последний успешный опрос БД любым worker старше 30 секунд либо метрики всех worker отсутствуют; условие держится ещё 30 секунд. Выявляет остановку обработки при работающем API. |
 
-Отсутствующий heartbeat при нуле worker — отсутствие метрик, а не нулевая
-задержка. Эта панель может показывать No data во время отказа; алерт учитывает
-такой случай через `absent()`. p95 требует пользовательского трафика.
+## Проверка firing
 
-## Три алерта и причины
-
-| Алерт | Условие | Зачем и что проверить |
-| --- | --- | --- |
-| `ShopApiNoHealthyTargets` | Ни одной доступной scrape-цели API, включая исчезновение всех рядов `up`, 30 секунд | Выявляет потерю наблюдаемости всего API. Проверить Pod, Service, `/metrics`, затем пользовательскую доступность. |
-| `ShopApiHighErrorRate` | Более 5% ответов 5xx за 2 минуты при минимум 20 запросах, условие держится 30 секунд; `/health` исключён | Выявляет пользовательские ошибки, в том числе проблемы БД. Проверить логи API/PostgreSQL и последние изменения. |
-| `ShopWorkerStalled` | Последний успешный опрос БД любым worker старше 30 секунд либо метрики всех worker отсутствуют; условие держится ещё 30 секунд | API может принимать заказы, но обработка остановится. Проверить реплики worker, логи и PostgreSQL. |
-
-## Проверка firing и восстановления
+В одном терминале сохранить исходное число worker и остановить обработку:
 
 ```bash
-python3 lecture-3-kubernetes-control-plane/scripts/check-monitoring.py
+worker_replicas=$(kubectl --context kind-lab2 -n shop get deployment shop-worker -o jsonpath='{.spec.replicas}')
+kubectl --context kind-lab2 -n shop scale deployment/shop-worker --replicas=0
 ```
 
-Скрипт проверяет реальные targets, правила, provisioned-дашборд и сохранность
-мониторинга Лабы 2. Затем масштабирует worker в ноль, создаёт заказ и ждёт
-`ShopWorkerStalled` в состоянии `firing` в Prometheus и появления алерта в
-существующем Alertmanager. В `finally` возвращает 2 worker, проверяет обработку
-заказа, восстановление пяти целей и исчезновение активных shop-алертов.
-Управляемая Helm конфигурация worker остаётся равной двум репликам.
-
-JSON реального firing-состояния, результаты PromQL и сводка сохраняются
-локально. Для ручного просмотра во время проверки можно
-задать `--hold-seconds 120`; затем восстановление продолжится автоматически.
-
-## Интерфейсы и скриншоты
-
-В отдельных терминалах:
+Дождаться ShopWorkerStalled в firing в Prometheus и его получения Alertmanager.
+Затем в том же терминале вернуть исходное число реплик:
 
 ```bash
-kubectl -n monitoring port-forward svc/prometheus-server 9090:80
-kubectl -n monitoring port-forward svc/grafana 3000:80
-kubectl -n monitoring port-forward svc/alertmanager 9093:9093
+kubectl --context kind-lab2 -n shop scale deployment/shop-worker --replicas="$worker_replicas"
+kubectl --context kind-lab2 -n shop rollout status deployment/shop-worker
 ```
 
-Grafana: `http://localhost:3000/d/shop-platform`, вход как в Лабе 2.
-Prometheus: `http://localhost:9090/targets` и `/alerts`.
-Alertmanager: `http://localhost:9093`.
+На проведённом эксперименте API продолжал отвечать, заказ ждал обработки,
+после восстановления обработался, цели вернулись в UP и алерт исчез.
+[Результаты и скриншоты](../REPORT.md).
 
-Для отчёта нужны дашборд, пять целей UP и реальное firing-состояние хотя бы
-одного алерта. После эксперимента его сохранённые данные доступны через:
+Для просмотра интерфейсов в отдельных терминалах:
 
 ```bash
-cat lecture-3-kubernetes-control-plane/artifacts.local/05-monitoring/summary.txt
-cat lecture-3-kubernetes-control-plane/artifacts.local/05-monitoring/prometheus-firing.json
+kubectl --context kind-lab2 -n monitoring port-forward svc/prometheus-server 9090:80
+kubectl --context kind-lab2 -n monitoring port-forward svc/grafana 3000:80
+kubectl --context kind-lab2 -n monitoring port-forward svc/alertmanager 9093:9093
 ```
 
-Источники: [ServiceMonitor и его выбор](https://prometheus-operator.dev/docs/platform/troubleshooting/),
-[конфигурация Prometheus](https://prometheus.io/docs/prometheus/latest/configuration/configuration/),
-[официальный CRD-чарт](https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus-operator-crds).
+Prometheus: http://localhost:9090/alerts, Grafana:
+http://localhost:3000/d/shop-platform, Alertmanager: http://localhost:9093.
+Вход в Grafana тот же, что в Лабе 2.

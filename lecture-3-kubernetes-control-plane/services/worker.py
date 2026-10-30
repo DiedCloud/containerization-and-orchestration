@@ -14,6 +14,7 @@ PROCESSED = Counter("shop_orders_processed_total", "Orders processed by this wor
 ERRORS = Counter("shop_worker_errors_total", "Worker database errors")
 LAST_SUCCESS = Gauge("shop_worker_last_success_timestamp_seconds", "Last successful database poll")
 last_poll = 0.0
+worker_task = None
 
 
 def process_one():
@@ -48,8 +49,9 @@ async def run():
 
 @asynccontextmanager
 async def lifespan(app):
+    global worker_task
     await asyncio.to_thread(initialize)
-    task = asyncio.create_task(run())
+    task = worker_task = asyncio.create_task(run())
     try:
         yield
     finally:
@@ -63,7 +65,17 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/health", response_class=PlainTextResponse)
 def health():
-    if os.getenv("HEALTH_FAIL", "false").lower() == "true" or time.monotonic() - last_poll > 30:
+    if os.getenv("HEALTH_FAIL", "false").lower() == "true":
+        raise HTTPException(503, "forced health failure")
+    if worker_task is None or worker_task.done():
+        raise HTTPException(503, "worker loop is not running")
+    return "ok"
+
+
+@app.get("/ready", response_class=PlainTextResponse)
+def ready():
+    health()
+    if not last_poll or time.monotonic() - last_poll > 30:
         raise HTTPException(503, "worker has no recent successful poll")
     return "ok"
 

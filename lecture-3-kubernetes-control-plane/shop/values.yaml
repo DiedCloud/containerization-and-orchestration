@@ -21,7 +21,7 @@ worker:
   replicas: 2
   image:
     repository: docker.io/library/shop
-    tag: "1.0.0"
+    tag: "1.1.1"
     pullPolicy: IfNotPresent
   healthFail: false
   service:
