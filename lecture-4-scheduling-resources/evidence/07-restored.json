@@ -1,0 +1,197 @@
+{
+  "time": 1793396831.1292233,
+  "pods": [
+    {
+      "name": "shop-api-58b6dd6cbd-7sr7z",
+      "uid": "e5e9d5fa-4191-424f-b4f5-35f7f9750eff",
+      "component": "api",
+      "node": "lab2-worker",
+      "qos": "Guaranteed",
+      "priority": 100000,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "api": {
+          "limits": {
+            "cpu": "486m",
+            "memory": "131Mi"
+          },
+          "requests": {
+            "cpu": "486m",
+            "memory": "131Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-api-58b6dd6cbd-rtbl7",
+      "uid": "ca1828f7-b4e2-4e8a-bcd3-7191489d875c",
+      "component": "api",
+      "node": "lab2-control-plane",
+      "qos": "Guaranteed",
+      "priority": 100000,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "api": {
+          "limits": {
+            "cpu": "486m",
+            "memory": "131Mi"
+          },
+          "requests": {
+            "cpu": "486m",
+            "memory": "131Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-batch-656c84867f-jmbjz",
+      "uid": "1e5b1fc2-facd-4b97-a68f-ed6b0d8304b1",
+      "component": "batch",
+      "node": "lab2-worker",
+      "qos": "Burstable",
+      "priority": -1000,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "batch": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "512Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "96Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-batch-6d67bd6c9b-crshg",
+      "uid": "0ecc8030-3aed-43ef-bd58-7ce49d408f79",
+      "component": "batch",
+      "node": "lab2-worker",
+      "qos": "Burstable",
+      "priority": -1000,
+      "phase": "Failed",
+      "reason": "Evicted",
+      "restarts": 0,
+      "ready": false,
+      "resources": {
+        "batch": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "96Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-batch-6d67bd6c9b-vxx5b",
+      "uid": "4a65d38e-e708-4d57-8ada-0517bd1efc65",
+      "component": "batch",
+      "node": "lab2-worker",
+      "qos": "Burstable",
+      "priority": -1000,
+      "phase": "Failed",
+      "reason": "Evicted",
+      "restarts": 0,
+      "ready": false,
+      "resources": {
+        "batch": {
+          "limits": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "memory": "96Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-postgres-1",
+      "uid": "dddc9e0f-699c-4680-9b37-15f4499f8516",
+      "component": "postgres",
+      "node": "lab2-control-plane",
+      "qos": "Guaranteed",
+      "priority": 100000,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "postgres": {
+          "limits": {
+            "cpu": "870m",
+            "memory": "212Mi"
+          },
+          "requests": {
+            "cpu": "870m",
+            "memory": "212Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-worker-58d87b7766-mwtfz",
+      "uid": "003a9325-288e-4ca8-9424-aa80627ba6f2",
+      "component": "worker",
+      "node": "lab2-control-plane",
+      "qos": "Burstable",
+      "priority": 0,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "worker": {
+          "limits": {
+            "cpu": "250m",
+            "memory": "128Mi"
+          },
+          "requests": {
+            "cpu": "217m",
+            "memory": "100Mi"
+          }
+        }
+      }
+    },
+    {
+      "name": "shop-worker-58d87b7766-pqbbg",
+      "uid": "75c6938e-6ce3-4aaa-9ca3-f622775fef48",
+      "component": "worker",
+      "node": "lab2-worker",
+      "qos": "Burstable",
+      "priority": 0,
+      "phase": "Running",
+      "reason": null,
+      "restarts": 0,
+      "ready": true,
+      "resources": {
+        "worker": {
+          "limits": {
+            "cpu": "250m",
+            "memory": "128Mi"
+          },
+          "requests": {
+            "cpu": "217m",
+            "memory": "100Mi"
+          }
+        }
+      }
+    }
+  ]
+}

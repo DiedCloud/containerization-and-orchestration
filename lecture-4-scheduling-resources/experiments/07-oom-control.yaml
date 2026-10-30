@@ -1,0 +1,11 @@
+# Separate control experiment, with normal memory eviction threshold restored.
+batch:
+  replicas: 1
+  memoryMiB: 256
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi

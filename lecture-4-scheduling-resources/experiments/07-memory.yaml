@@ -1,0 +1,14 @@
+batch:
+  replicas: 2
+  memoryMiB: 768
+  cpuDuty: "0.02"
+  allocationDelay: "0.05"
+  nodeSelector:
+    kubernetes.io/hostname: lab2-worker
+  resources:
+    requests:
+      cpu: 100m
+      memory: 96Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi

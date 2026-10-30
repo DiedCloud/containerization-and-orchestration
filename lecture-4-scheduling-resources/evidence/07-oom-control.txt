@@ -1,0 +1,63 @@
+Actual cgroup OOM control; memory eviction threshold restored to 100Mi
+{
+  "name": "shop-batch-5fbbcb6c9b-wl727",
+  "qos": "Burstable",
+  "resources": {
+    "limits": {
+      "cpu": "500m",
+      "memory": "128Mi"
+    },
+    "requests": {
+      "cpu": "100m",
+      "memory": "32Mi"
+    }
+  },
+  "status": [
+    {
+      "allocatedResources": {
+        "cpu": "100m",
+        "memory": "32Mi"
+      },
+      "containerID": "containerd://4c81b71680761239aaca03ccecd8869d551b6e0da20c179e0eca1d50c5c0f79c",
+      "image": "docker.io/library/shop-batch:4.0.0",
+      "imageID": "docker.io/library/import-2026-10-30@sha256:944d81c8ccf8308425b1af5b607f9ae567d2f4291db4a64395ba48f273f70f2f",
+      "lastState": {
+        "terminated": {
+          "containerID": "containerd://814bb9429ad7cf08507bb8c11836acfd2daf0fb8c0c30130a762186c27664c67",
+          "exitCode": 137,
+          "finishedAt": "2026-10-30T21:46:11Z",
+          "reason": "OOMKilled",
+          "startedAt": "2026-10-30T21:46:08Z"
+        }
+      },
+      "name": "batch",
+      "ready": true,
+      "resources": {
+        "limits": {
+          "cpu": "500m",
+          "memory": "128Mi"
+        },
+        "requests": {
+          "cpu": "100m",
+          "memory": "32Mi"
+        }
+      },
+      "restartCount": 1,
+      "started": true,
+      "state": {
+        "running": {
+          "startedAt": "2026-10-30T21:46:12Z"
+        }
+      },
+      "user": {
+        "linux": {
+          "gid": 0,
+          "supplementalGroups": [
+            0
+          ],
+          "uid": 10001
+        }
+      }
+    }
+  ]
+}
