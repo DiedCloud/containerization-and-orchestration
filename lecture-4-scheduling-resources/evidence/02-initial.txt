@@ -1,0 +1,39 @@
+2026-10-30T21:00:16.056657+00:00
+
+$ kubectl --context kind-lab2 get nodes -o wide
+NAME                 STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION           CONTAINER-RUNTIME
+lab2-control-plane   Ready    control-plane   6d1h    v1.37.0   172.20.0.2    <none>        Debian GNU/Linux 13 (trixie)   7.2.11-arch1-1 (amd64)   containerd://2.3.4
+lab2-worker          Ready    <none>          4m11s   v1.37.0   172.20.0.3    <none>        Debian GNU/Linux 13 (trixie)   7.2.11-arch1-1 (amd64)   containerd://2.3.4
+
+$ kubectl --context kind-lab2 -n shop get pods -o wide
+NAME                          READY   STATUS    RESTARTS      AGE     IP            NODE                 NOMINATED NODE   READINESS GATES
+shop-api-85768567ff-bsfc4     1/1     Running   1 (18h ago)   19h     10.244.0.20   lab2-control-plane   <none>           <none>
+shop-api-85768567ff-cs74n     1/1     Running   1 (18h ago)   19h     10.244.0.22   lab2-control-plane   <none>           <none>
+shop-api-85768567ff-ctrbj     1/1     Running   1 (18h ago)   19h     10.244.0.18   lab2-control-plane   <none>           <none>
+shop-batch-6f48487c4b-xw2k4   1/1     Running   0             3m10s   10.244.1.3    lab2-worker          <none>           <none>
+shop-postgres-1               1/1     Running   0             18h     10.244.0.27   lab2-control-plane   <none>           <none>
+shop-worker-9cf755d74-m25q8   1/1     Running   0             113m    10.244.0.42   lab2-control-plane   <none>           <none>
+shop-worker-9cf755d74-pm9j4   1/1     Running   0             113m    10.244.0.43   lab2-control-plane   <none>           <none>
+
+$ kubectl --context kind-lab2 -n shop get pods -o custom-columns=NAME:.metadata.name,QOS:.status.qosClass,PRIORITY:.spec.priority,REASON:.status.reason,MESSAGE:.status.message
+NAME                          QOS         PRIORITY   REASON   MESSAGE
+shop-api-85768567ff-bsfc4     Burstable   0          <none>   <none>
+shop-api-85768567ff-cs74n     Burstable   0          <none>   <none>
+shop-api-85768567ff-ctrbj     Burstable   0          <none>   <none>
+shop-batch-6f48487c4b-xw2k4   Burstable   0          <none>   <none>
+shop-postgres-1               Burstable   0          <none>   <none>
+shop-worker-9cf755d74-m25q8   Burstable   0          <none>   <none>
+shop-worker-9cf755d74-pm9j4   Burstable   0          <none>   <none>
+
+$ kubectl --context kind-lab2 -n shop get events --sort-by=.metadata.creationTimestamp
+LAST SEEN   TYPE     REASON              OBJECT                             MESSAGE
+3m10s       Normal   Scheduled           pod/shop-batch-6f48487c4b-xw2k4    Successfully assigned shop/shop-batch-6f48487c4b-xw2k4 to lab2-worker
+3m10s       Normal   Pulled              pod/shop-batch-6f48487c4b-xw2k4    Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+3m10s       Normal   Created             pod/shop-batch-6f48487c4b-xw2k4    Container created
+3m10s       Normal   Started             pod/shop-batch-6f48487c4b-xw2k4    Container started
+3m10s       Normal   SuccessfulCreate    replicaset/shop-batch-6f48487c4b   Created pod: shop-batch-6f48487c4b-xw2k4
+3m10s       Normal   ScalingReplicaSet   deployment/shop-batch              Scaled up replica set shop-batch-6f48487c4b from 0 to 1
+
+$ kubectl --context kind-lab2 -n shop get pdb
+NAME                    MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+shop-postgres-primary   1               N/A               0                     19h

@@ -11,8 +11,8 @@ api:
     nodePort: 30080
   resources:
     requests:
-      cpu: 50m
-      memory: 64Mi
+      cpu: 61m
+      memory: 100Mi
     limits:
       cpu: 500m
       memory: 128Mi
@@ -29,8 +29,8 @@ worker:
     port: 8000
   resources:
     requests:
-      cpu: 25m
-      memory: 64Mi
+      cpu: 46m
+      memory: 100Mi
     limits:
       cpu: 250m
       memory: 128Mi
@@ -58,8 +58,8 @@ postgres:
     storageClass: standard
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: 156m
+      memory: 100Mi
     limits:
       cpu: "1"
       memory: 512Mi
@@ -84,3 +84,11 @@ batch:
     limits:
       cpu: 500m
       memory: 512Mi
+
+priorities:
+  enabled: false
+  critical: 100000
+  batch: -1000
+pdb:
+  enabled: false
+  apiMinAvailable: 1
