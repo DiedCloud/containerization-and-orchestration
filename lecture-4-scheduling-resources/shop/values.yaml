@@ -1,5 +1,5 @@
 api:
-  replicas: 3
+  replicas: 2
   image:
     repository: docker.io/library/shop
     tag: "1.1.0"
@@ -67,7 +67,7 @@ postgres:
 placement:
   # topologySpreadConstraints or podAntiAffinity
   mechanism: topologySpreadConstraints
-  enabled: false
+  enabled: true
   topologyKey: kubernetes.io/hostname
 
 batch:
