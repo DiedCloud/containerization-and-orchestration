@@ -24,6 +24,8 @@ original = ClusterLoader.list_scannable_objects
 
 async def with_cnpg(self):
     objects = await original(self)
+    if not self._should_list_resource("Cluster"):
+        return objects
     namespaces = self.namespaces
     if namespaces == "*":
         clusters = self.custom_objects.list_cluster_custom_object("postgresql.cnpg.io", "v1", "clusters")["items"]

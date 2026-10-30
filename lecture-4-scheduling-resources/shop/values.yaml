@@ -11,11 +11,11 @@ api:
     nodePort: 30080
   resources:
     requests:
-      cpu: 61m
-      memory: 100Mi
+      cpu: 486m
+      memory: 131Mi
     limits:
-      cpu: 500m
-      memory: 128Mi
+      cpu: 486m
+      memory: 131Mi
 
 worker:
   replicas: 2
@@ -29,7 +29,7 @@ worker:
     port: 8000
   resources:
     requests:
-      cpu: 46m
+      cpu: 217m
       memory: 100Mi
     limits:
       cpu: 250m
@@ -46,9 +46,24 @@ rollout:
   maxSurge: 1
   maxUnavailable: 0
   minReadySeconds: 5
-  progressDeadlineSeconds: 60
+  progressDeadlineSeconds: 300
 
 postgres:
+  stopDelay: 30
+  smartShutdownTimeout: 10
+  env:
+    - name: GOMAXPROCS
+      value: "1"
+  probes:
+    startup:
+      periodSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 60
+    liveness:
+      timeoutSeconds: 10
+      failureThreshold: 6
+    readiness:
+      timeoutSeconds: 10
   image: ghcr.io/cloudnative-pg/postgresql:17.7
   instances: 1
   database: shop
@@ -58,11 +73,11 @@ postgres:
     storageClass: standard
   resources:
     requests:
-      cpu: 156m
-      memory: 100Mi
+      cpu: 870m
+      memory: 212Mi
     limits:
-      cpu: "1"
-      memory: 512Mi
+      cpu: 870m
+      memory: 212Mi
 
 placement:
   # topologySpreadConstraints or podAntiAffinity
@@ -86,9 +101,9 @@ batch:
       memory: 512Mi
 
 priorities:
-  enabled: false
+  enabled: true
   critical: 100000
   batch: -1000
 pdb:
-  enabled: false
+  enabled: true
   apiMinAvailable: 1

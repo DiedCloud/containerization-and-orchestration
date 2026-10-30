@@ -6,7 +6,17 @@ metadata:
     app: {{ .Release.Name }}-postgres
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
+  stopDelay: {{ .Values.postgres.stopDelay }}
+  smartShutdownTimeout: {{ .Values.postgres.smartShutdownTimeout }}
+  env:
+    {{- toYaml .Values.postgres.env | nindent 4 }}
+  probes:
+    {{- toYaml .Values.postgres.probes | nindent 4 }}
   imageName: {{ .Values.postgres.image | quote }}
+  {{- if .Values.priorities.enabled }}
+  priorityClassName: {{ .Release.Name }}-critical
+  {{- end }}
+  enablePDB: {{ .Values.pdb.enabled }}
   instances: {{ .Values.postgres.instances }}
   inheritedMetadata:
     labels:

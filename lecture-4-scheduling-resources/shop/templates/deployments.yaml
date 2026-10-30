@@ -33,6 +33,9 @@ spec:
       {{- if eq $component "api" }}
       {{- include "shop.placement" $ | nindent 6 }}
       {{- end }}
+      {{- if and $.Values.priorities.enabled (eq $component "api") }}
+      priorityClassName: {{ $.Release.Name }}-critical
+      {{- end }}
       automountServiceAccountToken: false
       hostNetwork: false
       hostPID: false

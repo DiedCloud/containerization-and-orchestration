@@ -7,6 +7,7 @@ topologySpreadConstraints:
     topologyKey: {{ .Values.placement.topologyKey }}
     whenUnsatisfiable: DoNotSchedule
     minDomains: 2
+    matchLabelKeys: [pod-template-hash]
     labelSelector:
       matchLabels:
         {{- toYaml $selector | nindent 8 }}

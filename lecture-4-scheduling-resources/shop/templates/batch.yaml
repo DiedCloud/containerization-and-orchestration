@@ -17,6 +17,9 @@ spec:
         app.kubernetes.io/name: batch
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      {{- if .Values.priorities.enabled }}
+      priorityClassName: {{ .Release.Name }}-batch
+      {{- end }}
       automountServiceAccountToken: false
       terminationGracePeriodSeconds: 1
       {{- with .Values.batch.nodeSelector }}

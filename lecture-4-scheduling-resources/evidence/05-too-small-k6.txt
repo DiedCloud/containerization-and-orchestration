@@ -1,0 +1,48 @@
+time="2026-10-31T00:19:24+03:00" level=warning msg="Request Failed" error="Post \"http://172.20.0.2:30080/order\": request timeout"
+time="2026-10-31T00:19:25+03:00" level=warning msg="Request Failed" error="Post \"http://172.20.0.2:30080/order\": request timeout"
+
+
+  █ THRESHOLDS 
+
+    checks
+    ✗ 'rate>0.99' rate=2.61%
+
+    dropped_iterations
+    ✗ 'count==0' count=27
+
+    http_req_duration
+    ✗ 'p(95)<300' p(95)=3.55s
+
+    http_req_failed
+    ✗ 'rate<0.01' rate=97.38%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 574    9.108625/s
+    checks_succeeded...: 2.61%  15 out of 574
+    checks_failed......: 97.38% 559 out of 574
+
+    ✗ order persisted (201 + id)
+      ↳  2% — ✓ 15 / ✗ 559
+
+    HTTP
+    http_req_duration..............: avg=2.72s min=2.62ms med=3.06s max=5s    p(90)=3.29s p(95)=3.55s
+      { expected_response:true }...: avg=3.49s min=2.09s  med=3.63s max=4.48s p(90)=4.38s p(95)=4.48s
+    http_req_failed................: 97.38% 559 out of 574
+    http_reqs......................: 574    9.108625/s
+
+    EXECUTION
+    dropped_iterations.............: 27     0.428454/s
+    iteration_duration.............: avg=2.72s min=2.74ms med=3.06s max=5s    p(90)=3.29s p(95)=3.55s
+    iterations.....................: 574    9.108625/s
+    vus............................: 1      min=0          max=35
+    vus_max........................: 37     min=10         max=37
+
+    NETWORK
+    data_received..................: 112 kB 1.8 kB/s
+    data_sent......................: 94 kB  1.5 kB/s
+
+
+
+time="2026-10-31T00:20:11+03:00" level=error msg="thresholds on metrics 'checks, dropped_iterations, http_req_duration, http_req_failed' have been crossed"

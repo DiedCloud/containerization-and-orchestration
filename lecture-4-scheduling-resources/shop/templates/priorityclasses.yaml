@@ -1,0 +1,19 @@
+{{- if .Values.priorities.enabled }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Release.Name }}-critical
+value: {{ .Values.priorities.critical }}
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: Critical order API and PostgreSQL
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ .Release.Name }}-batch
+value: {{ .Values.priorities.batch }}
+globalDefault: false
+preemptionPolicy: Never
+description: Disposable background analytics
+{{- end }}

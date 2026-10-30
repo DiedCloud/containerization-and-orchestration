@@ -1,11 +1,11 @@
-# Рекомендации krr v1.31.1
+# Финальные рекомендации krr v1.31.1
 
-История: 1 час (включая период нагрузки 10 POST /order в секунду). CPU p99, память max +15%, минимальная память krr 100Mi, шаг 1 минута, минимум 20 точек.
+Upstream simple_limit: CPU request p100 = limit p100, memory max+100%; history 1h, step 1min, points_required=20. Профилирование включает 30 POST /order в секунду и перезапуски компонентов. Абсолютные числа взяты из 03-krr-final.json.
 
-| Сервис | CPU request | Память request = limit |
+| Сервис | CPU request | RAM request = рекомендованный limit |
 |---|---|---|
-| api | 61m | 100Mi |
-| worker | 46m | 100Mi |
-| postgres | 156m | 100Mi |
+| api | 486m | 131Mi |
+| worker | 217m | 100Mi |
+| postgres | 870m | 212Mi |
 
-CPU limit исходно unset: в финальном Guaranteed-профиле он приравнен к CPU request. KRR предупреждает NotEnoughHistoryAvailable: лабораторная история короче рекомендуемой длительной выборки. Batch не является целью rightsizing, его значения меняются для экспериментов.
+API/postgres: limits=requests для Guaranteed. Worker остаётся Burstable с limits 250m/128Mi. Первый simple p99 дал 61m/100Mi API и 156m/100Mi PostgreSQL: при превращении request в limit возникли throttling, сбой CNPG probes/lease и нарушение SLA. Поэтому исходная оценка не выдана за успешный финальный результат. Оба JSON сохранены. История лабораторная, предупреждение KRR NotEnoughHistoryAvailable сохранено; для production нужна длительная репрезентативная выборка.
