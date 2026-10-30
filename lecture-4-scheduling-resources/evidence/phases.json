@@ -1,0 +1,18 @@
+[
+  {
+    "phase": "cpu-sla-start",
+    "time": 1793395611.7704067
+  },
+  {
+    "phase": "cpu-fill-start",
+    "time": 1793395613.6959507
+  },
+  {
+    "phase": "api-preemption-start",
+    "time": 1793395660.4874098
+  },
+  {
+    "phase": "cpu-pressure-end",
+    "time": 1793395700.4458613
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "lab2-control-plane": {
+    "existing_requests_cpu": "2.893",
+    "api_request_cpu": "0.486",
+    "batch_slots": 2,
+    "reserved_cpu": "11864m",
+    "target_allocatable_cpu": "4.136"
+  },
+  "lab2-worker": {
+    "existing_requests_cpu": "0.813",
+    "api_request_cpu": "0.486",
+    "batch_slots": 2,
+    "reserved_cpu": "13944m",
+    "target_allocatable_cpu": "2.056"
+  }
+}

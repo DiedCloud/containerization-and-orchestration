@@ -19,7 +19,7 @@ import re
 for key, value in {"kubeReserved": {"cpu": args.reserved_cpu},
                    "evictionHard": {"memory.available": args.memory_threshold,
                                     "nodefs.available": "0%", "imagefs.available": "0%", "nodefs.inodesFree": "0%"}}.items():
-    config = re.sub(r"^" + key + r":\n(?:[ \t].*\n)*", "", config, flags=re.M)
+    config = re.sub(r"^" + key + r":[^\n]*\n(?:[ \t]+[^\n]*\n)*", "", config, flags=re.M)
     config += key + ": " + json.dumps(value) + "\n"
 subprocess.run(["docker", "exec", "-i", args.node, "cp", "/dev/stdin", "/var/lib/kubelet/config.yaml"], input=config, text=True, check=True)
 subprocess.run(["docker", "exec", args.node, "systemctl", "restart", "kubelet"], check=True)
