@@ -1,0 +1,514 @@
+2026-10-30T21:50:17.037740+00:00
+
+$ kubectl --context kind-lab2 get nodes -o wide
+NAME                 STATUS   ROLES           AGE    VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION           CONTAINER-RUNTIME
+lab2-control-plane   Ready    control-plane   6d2h   v1.37.0   172.20.0.2    <none>        Debian GNU/Linux 13 (trixie)   7.2.11-arch1-1 (amd64)   containerd://2.3.4
+lab2-worker          Ready    <none>          54m    v1.37.0   172.20.0.3    <none>        Debian GNU/Linux 13 (trixie)   7.2.11-arch1-1 (amd64)   containerd://2.3.4
+
+$ kubectl --context kind-lab2 -n shop get pods -o wide
+NAME                           READY   STATUS    RESTARTS   AGE     IP            NODE                 NOMINATED NODE   READINESS GATES
+shop-api-58b6dd6cbd-7sr7z      1/1     Running   0          24m     10.244.1.13   lab2-worker          <none>           <none>
+shop-api-58b6dd6cbd-rtbl7      1/1     Running   0          24m     10.244.0.62   lab2-control-plane   <none>           <none>
+shop-batch-656c84867f-jmbjz    1/1     Running   0          4m4s    10.244.1.26   lab2-worker          <none>           <none>
+shop-batch-6d67bd6c9b-crshg    0/1     Error     0          6m19s   <none>        lab2-worker          <none>           <none>
+shop-batch-6d67bd6c9b-vxx5b    0/1     Error     0          6m20s   <none>        lab2-worker          <none>           <none>
+shop-postgres-1                1/1     Running   0          24m     10.244.0.63   lab2-control-plane   <none>           <none>
+shop-worker-58d87b7766-mwtfz   1/1     Running   0          24m     10.244.0.64   lab2-control-plane   <none>           <none>
+shop-worker-58d87b7766-pqbbg   1/1     Running   0          24m     10.244.1.12   lab2-worker          <none>           <none>
+
+$ kubectl --context kind-lab2 -n shop get pods -o custom-columns=NAME:.metadata.name,QOS:.status.qosClass,PRIORITY:.spec.priority,REASON:.status.reason,MESSAGE:.status.message
+NAME                           QOS          PRIORITY   REASON    MESSAGE
+shop-api-58b6dd6cbd-7sr7z      Guaranteed   100000     <none>    <none>
+shop-api-58b6dd6cbd-rtbl7      Guaranteed   100000     <none>    <none>
+shop-batch-656c84867f-jmbjz    Burstable    -1000      <none>    <none>
+shop-batch-6d67bd6c9b-crshg    Burstable    -1000      Evicted   The node was low on resource: memory. Threshold quantity: 22707Mi, available: 22970692Ki. Container batch was using 341068Ki, request is 96Mi, has larger consumption of memory. 
+shop-batch-6d67bd6c9b-vxx5b    Burstable    -1000      Evicted   The node was low on resource: memory. Threshold quantity: 22707Mi, available: 23090232Ki. Container batch was using 556276Ki, request is 96Mi, has larger consumption of memory. 
+shop-postgres-1                Guaranteed   100000     <none>    <none>
+shop-worker-58d87b7766-mwtfz   Burstable    0          <none>    <none>
+shop-worker-58d87b7766-pqbbg   Burstable    0          <none>    <none>
+
+$ kubectl --context kind-lab2 -n shop get events --sort-by=.metadata.creationTimestamp
+LAST SEEN   TYPE      REASON                        OBJECT                                      MESSAGE
+53m         Normal    SuccessfulCreate              replicaset/shop-batch-6f48487c4b            Created pod: shop-batch-6f48487c4b-xw2k4
+53m         Normal    Scheduled                     pod/shop-batch-6f48487c4b-xw2k4             Successfully assigned shop/shop-batch-6f48487c4b-xw2k4 to lab2-worker
+53m         Normal    Pulled                        pod/shop-batch-6f48487c4b-xw2k4             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+53m         Normal    Created                       pod/shop-batch-6f48487c4b-xw2k4             Container created
+53m         Normal    Started                       pod/shop-batch-6f48487c4b-xw2k4             Container started
+29m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-6f48487c4b from 0 to 1
+38m         Normal    Created                       pod/shop-worker-5b95c779cd-dlblq            Container created
+38m         Normal    Pulled                        pod/shop-api-5d9fcfd9c9-f824m               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+38m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-5d9fcfd9c9 from 0 to 1
+38m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+38m         Normal    Scheduled                     pod/shop-worker-5b95c779cd-dlblq            Successfully assigned shop/shop-worker-5b95c779cd-dlblq to lab2-worker
+24m         Normal    UpgradingInstance             cluster/shop-postgres                       Upgrading instance shop-postgres-1
+38m         Normal    Scheduled                     pod/shop-api-5d9fcfd9c9-f824m               Successfully assigned shop/shop-api-5d9fcfd9c9-f824m to lab2-worker
+29m         Normal    DeletingPodDisruptionBudget   cluster/shop-postgres                       Deleting Pod Disruption Budget shop-postgres-primary
+38m         Normal    SuccessfulCreate              replicaset/shop-worker-5b95c779cd           Created pod: shop-worker-5b95c779cd-dlblq
+38m         Normal    SuccessfulCreate              replicaset/shop-api-5d9fcfd9c9              Created pod: shop-api-5d9fcfd9c9-f824m
+38m         Normal    Started                       pod/shop-worker-5b95c779cd-dlblq            Container started
+38m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled up replica set shop-worker-5b95c779cd from 0 to 1
+38m         Normal    Pulled                        pod/shop-worker-5b95c779cd-dlblq            Container image "docker.io/library/shop:1.1.1" already present on machine and can be accessed by the pod
+38m         Normal    Created                       pod/shop-api-5d9fcfd9c9-f824m               Container created
+38m         Normal    Started                       pod/shop-api-5d9fcfd9c9-f824m               Container started
+38m         Normal    Created                       pod/shop-postgres-1                         Container created
+38m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+38m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+38m         Warning   Unhealthy                     pod/shop-api-5d9fcfd9c9-f824m               Startup probe failed: dial tcp 10.244.1.4:8000: connect: connection refused
+38m         Warning   Unhealthy                     pod/shop-worker-5b95c779cd-dlblq            Startup probe failed: dial tcp 10.244.1.5:8000: connect: connection refused
+38m         Normal    Started                       pod/shop-postgres-1                         Container started
+38m         Normal    Created                       pod/shop-postgres-1                         Container created
+38m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+38m         Normal    Started                       pod/shop-postgres-1                         Container started
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-5d9fcfd9c9 from 1 to 2
+37m         Normal    Pulled                        pod/shop-api-5d9fcfd9c9-6b6rt               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+37m         Normal    Created                       pod/shop-api-5d9fcfd9c9-6b6rt               Container created
+37m         Normal    Started                       pod/shop-api-5d9fcfd9c9-6b6rt               Container started
+37m         Normal    Scheduled                     pod/shop-api-5d9fcfd9c9-6b6rt               Successfully assigned shop/shop-api-5d9fcfd9c9-6b6rt to lab2-control-plane
+37m         Normal    SuccessfulCreate              replicaset/shop-api-5d9fcfd9c9              Created pod: shop-api-5d9fcfd9c9-6b6rt
+37m         Normal    SuccessfulDelete              replicaset/shop-api-85768567ff              Deleted pod: shop-api-85768567ff-bsfc4
+37m         Normal    Killing                       pod/shop-api-85768567ff-bsfc4               Stopping container api
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-85768567ff from 3 to 2
+37m         Normal    Killing                       pod/shop-worker-9cf755d74-m25q8             Stopping container worker
+37m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled up replica set shop-worker-5b95c779cd from 1 to 2
+37m         Normal    Started                       pod/shop-worker-5b95c779cd-rz4jm            Container started
+37m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled down replica set shop-worker-9cf755d74 from 2 to 1
+37m         Normal    SuccessfulDelete              replicaset/shop-worker-9cf755d74            Deleted pod: shop-worker-9cf755d74-m25q8
+37m         Normal    Created                       pod/shop-worker-5b95c779cd-rz4jm            Container created
+37m         Normal    SuccessfulCreate              replicaset/shop-worker-5b95c779cd           Created pod: shop-worker-5b95c779cd-rz4jm
+37m         Normal    Scheduled                     pod/shop-worker-5b95c779cd-rz4jm            Successfully assigned shop/shop-worker-5b95c779cd-rz4jm to lab2-control-plane
+37m         Normal    Pulled                        pod/shop-worker-5b95c779cd-rz4jm            Container image "docker.io/library/shop:1.1.1" already present on machine and can be accessed by the pod
+37m         Warning   Unhealthy                     pod/shop-worker-5b95c779cd-rz4jm            Startup probe failed: dial tcp 10.244.0.46:8000: connect: connection refused
+37m         Warning   Unhealthy                     pod/shop-worker-9cf755d74-m25q8             Readiness probe failed: Get "http://10.244.0.42:8000/health": dial tcp 10.244.0.42:8000: connect: connection refused
+37m         Normal    SuccessfulCreate              replicaset/shop-api-5d9fcfd9c9              Created pod: shop-api-5d9fcfd9c9-znvdb
+37m         Normal    Created                       pod/shop-api-5d9fcfd9c9-znvdb               Container created
+37m         Normal    Pulled                        pod/shop-api-5d9fcfd9c9-znvdb               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+37m         Normal    Started                       pod/shop-api-5d9fcfd9c9-znvdb               Container started
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-5d9fcfd9c9 from 2 to 3
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-85768567ff from 2 to 1
+37m         Normal    Scheduled                     pod/shop-api-5d9fcfd9c9-znvdb               Successfully assigned shop/shop-api-5d9fcfd9c9-znvdb to lab2-control-plane
+37m         Normal    Killing                       pod/shop-api-85768567ff-ctrbj               Stopping container api
+37m         Normal    SuccessfulDelete              replicaset/shop-api-85768567ff              Deleted pod: shop-api-85768567ff-ctrbj
+37m         Normal    Killing                       pod/shop-worker-9cf755d74-pm9j4             Stopping container worker
+37m         Normal    SuccessfulDelete              replicaset/shop-worker-9cf755d74            Deleted pod: shop-worker-9cf755d74-pm9j4
+37m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled down replica set shop-worker-9cf755d74 from 1 to 0
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-85768567ff from 1 to 0
+37m         Normal    SuccessfulDelete              replicaset/shop-api-85768567ff              Deleted pod: shop-api-85768567ff-cs74n
+37m         Normal    Killing                       pod/shop-api-85768567ff-cs74n               Stopping container api
+37m         Normal    Pulled                        pod/shop-api-65ddb866f-cxs2z                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+37m         Normal    Created                       pod/shop-api-65ddb866f-cxs2z                Container created
+37m         Normal    SuccessfulCreate              replicaset/shop-api-65ddb866f               Created pod: shop-api-65ddb866f-cxs2z
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-5d9fcfd9c9 from 3 to 2
+29m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-65ddb866f from 0 to 1
+37m         Normal    SuccessfulDelete              replicaset/shop-api-5d9fcfd9c9              Deleted pod: shop-api-5d9fcfd9c9-znvdb
+37m         Normal    Killing                       pod/shop-api-5d9fcfd9c9-znvdb               Stopping container api
+37m         Normal    Started                       pod/shop-api-65ddb866f-cxs2z                Container started
+37m         Normal    Scheduled                     pod/shop-api-65ddb866f-cxs2z                Successfully assigned shop/shop-api-65ddb866f-cxs2z to lab2-control-plane
+22m         Normal    ScalingReplicaSet             deployment/shop-api                         (combined from similar events): Scaled up replica set shop-api-58b6dd6cbd from 2 to 4
+37m         Normal    SuccessfulDelete              replicaset/shop-api-5d9fcfd9c9              Deleted pod: shop-api-5d9fcfd9c9-6b6rt
+37m         Normal    SuccessfulCreate              replicaset/shop-api-65ddb866f               Created pod: shop-api-65ddb866f-f4224
+37m         Normal    Killing                       pod/shop-api-5d9fcfd9c9-6b6rt               Stopping container api
+37m         Normal    Scheduled                     pod/shop-api-65ddb866f-f4224                Successfully assigned shop/shop-api-65ddb866f-f4224 to lab2-worker
+37m         Normal    Pulled                        pod/shop-api-65ddb866f-f4224                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+37m         Normal    Created                       pod/shop-api-65ddb866f-f4224                Container created
+37m         Normal    Started                       pod/shop-api-65ddb866f-f4224                Container started
+37m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-5d9fcfd9c9 from 2 to 1
+37m         Normal    Killing                       pod/shop-api-5d9fcfd9c9-f824m               Stopping container api
+37m         Normal    SuccessfulDelete              replicaset/shop-api-5d9fcfd9c9              Deleted pod: shop-api-5d9fcfd9c9-f824m
+28m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-656c84867f from 0 to 1
+36m         Normal    SuccessfulCreate              replicaset/shop-api-685cf4d4c4              Created pod: shop-api-685cf4d4c4-rslz6
+36m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-9cwg2
+28m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled down replica set shop-batch-6f48487c4b from 1 to 0
+36m         Normal    SuccessfulDelete              replicaset/shop-batch-6f48487c4b            Deleted pod: shop-batch-6f48487c4b-xw2k4
+36m         Normal    Created                       pod/shop-batch-656c84867f-9cwg2             Container created
+36m         Normal    Pulled                        pod/shop-batch-656c84867f-9cwg2             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+36m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+28m         Normal    CreatingPodDisruptionBudget   cluster/shop-postgres                       Creating PodDisruptionBudget shop-postgres-primary
+36m         Normal    Scheduled                     pod/shop-batch-656c84867f-9cwg2             Successfully assigned shop/shop-batch-656c84867f-9cwg2 to lab2-control-plane
+36m         Normal    Killing                       pod/shop-batch-6f48487c4b-xw2k4             Stopping container batch
+36m         Normal    Started                       pod/shop-batch-656c84867f-9cwg2             Container started
+36m         Normal    Scheduled                     pod/shop-api-685cf4d4c4-rslz6               Successfully assigned shop/shop-api-685cf4d4c4-rslz6 to lab2-control-plane
+36m         Normal    Pulled                        pod/shop-api-685cf4d4c4-rslz6               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+36m         Normal    NoPods                        poddisruptionbudget/shop-postgres-primary   No matching pods found
+36m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+36m         Normal    Started                       pod/shop-api-685cf4d4c4-rslz6               Container started
+36m         Normal    Created                       pod/shop-api-685cf4d4c4-rslz6               Container created
+36m         Normal    Started                       pod/shop-postgres-1                         Container started
+36m         Normal    Created                       pod/shop-postgres-1                         Container created
+36m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+36m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-rslz6               Startup probe failed: dial tcp 10.244.0.50:8000: connect: connection refused
+32m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+32m         Normal    Created                       pod/shop-postgres-1                         Container created
+32m         Normal    Started                       pod/shop-postgres-1                         Container started
+36m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.51:8000/healthz": context deadline exceeded
+27m         Normal    Pulled                        pod/shop-api-685cf4d4c4-tm8bf               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+36m         Normal    Scheduled                     pod/shop-api-685cf4d4c4-tm8bf               Successfully assigned shop/shop-api-685cf4d4c4-tm8bf to lab2-worker
+36m         Normal    SuccessfulCreate              replicaset/shop-api-685cf4d4c4              Created pod: shop-api-685cf4d4c4-tm8bf
+36m         Normal    SuccessfulDelete              replicaset/shop-api-65ddb866f               Deleted pod: shop-api-65ddb866f-cxs2z
+36m         Normal    Killing                       pod/shop-api-65ddb866f-cxs2z                Stopping container api
+27m         Normal    Created                       pod/shop-api-685cf4d4c4-tm8bf               Container created
+33m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.51:8000/readyz": context deadline exceeded
+27m         Normal    Started                       pod/shop-api-685cf4d4c4-tm8bf               Container started
+36m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-tm8bf               Startup probe failed: dial tcp 10.244.1.7:8000: connect: connection refused
+36m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.51:8000/healthz": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+36m         Normal    Killing                       pod/shop-postgres-1                         Container postgres failed liveness probe, will be restarted
+36m         Normal    Killing                       pod/shop-api-65ddb866f-f4224                Stopping container api
+36m         Normal    SuccessfulDelete              replicaset/shop-api-65ddb866f               Deleted pod: shop-api-65ddb866f-f4224
+33m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.51:8000/readyz": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+34m         Normal    SuccessfulCreate              replicaset/shop-batch-6f48487c4b            Created pod: shop-batch-6f48487c4b-mqp8x
+34m         Normal    Scheduled                     pod/shop-api-65ddb866f-xvvtn                Successfully assigned shop/shop-api-65ddb866f-xvvtn to lab2-control-plane
+34m         Normal    Scheduled                     pod/shop-batch-6f48487c4b-mqp8x             Successfully assigned shop/shop-batch-6f48487c4b-mqp8x to lab2-worker
+34m         Normal    SuccessfulCreate              replicaset/shop-api-65ddb866f               Created pod: shop-api-65ddb866f-xvvtn
+32m         Normal    Created                       pod/shop-api-65ddb866f-xvvtn                Container created
+6m19s       Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled down replica set shop-batch-656c84867f from 1 to 0
+34m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-9cwg2
+32m         Normal    Started                       pod/shop-api-65ddb866f-xvvtn                Container started
+34m         Normal    Created                       pod/shop-batch-6f48487c4b-mqp8x             Container created
+34m         Normal    Killing                       pod/shop-batch-656c84867f-9cwg2             Stopping container batch
+32m         Normal    Pulled                        pod/shop-api-65ddb866f-xvvtn                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+34m         Normal    Pulled                        pod/shop-batch-6f48487c4b-mqp8x             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+34m         Normal    Started                       pod/shop-batch-6f48487c4b-mqp8x             Container started
+33m         Warning   Unhealthy                     pod/shop-api-65ddb866f-xvvtn                Startup probe failed: dial tcp 10.244.0.52:8000: connect: connection refused
+32m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+32m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+32m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+32m         Normal    Created                       pod/shop-postgres-1                         Container created
+32m         Normal    Started                       pod/shop-postgres-1                         Container started
+32m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+32m         Normal    Started                       pod/shop-postgres-1                         Container started
+32m         Normal    Created                       pod/shop-postgres-1                         Container created
+32m         Normal    Started                       pod/shop-api-65ddb866f-fm82t                Container started
+32m         Normal    Killing                       pod/shop-api-685cf4d4c4-rslz6               Stopping container api
+32m         Normal    SuccessfulDelete              replicaset/shop-api-685cf4d4c4              Deleted pod: shop-api-685cf4d4c4-rslz6
+32m         Normal    SuccessfulCreate              replicaset/shop-api-65ddb866f               Created pod: shop-api-65ddb866f-fm82t
+32m         Normal    Scheduled                     pod/shop-api-65ddb866f-fm82t                Successfully assigned shop/shop-api-65ddb866f-fm82t to lab2-control-plane
+32m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-65ddb866f from 1 to 2
+32m         Normal    Pulled                        pod/shop-api-65ddb866f-fm82t                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+32m         Normal    Created                       pod/shop-api-65ddb866f-fm82t                Container created
+31m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled up replica set shop-api-685cf4d4c4 from 1 to 2
+31m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-65ddb866f from 2 to 1
+31m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-nxmhd
+31m         Normal    Scheduled                     pod/shop-batch-656c84867f-nxmhd             Successfully assigned shop/shop-batch-656c84867f-nxmhd to lab2-control-plane
+31m         Normal    Killing                       pod/shop-api-65ddb866f-fm82t                Stopping container api
+31m         Normal    Scheduled                     pod/shop-api-685cf4d4c4-cmmnz               Successfully assigned shop/shop-api-685cf4d4c4-cmmnz to lab2-worker
+31m         Normal    SuccessfulCreate              replicaset/shop-api-685cf4d4c4              Created pod: shop-api-685cf4d4c4-cmmnz
+31m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-rslz6               Readiness probe failed: Get "http://10.244.0.50:8000/health": dial tcp 10.244.0.50:8000: connect: connection refused
+31m         Normal    SuccessfulDelete              replicaset/shop-api-65ddb866f               Deleted pod: shop-api-65ddb866f-fm82t
+31m         Normal    Started                       pod/shop-batch-656c84867f-nxmhd             Container started
+31m         Normal    Pulled                        pod/shop-batch-656c84867f-nxmhd             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+31m         Normal    Created                       pod/shop-batch-656c84867f-nxmhd             Container created
+31m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+27m         Normal    Created                       pod/shop-api-685cf4d4c4-cmmnz               Container created
+31m         Normal    SuccessfulDelete              replicaset/shop-batch-6f48487c4b            Deleted pod: shop-batch-6f48487c4b-mqp8x
+31m         Normal    Killing                       pod/shop-batch-6f48487c4b-mqp8x             Stopping container batch
+27m         Normal    Pulled                        pod/shop-api-685cf4d4c4-cmmnz               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+31m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+31m         Normal    NoPods                        poddisruptionbudget/shop-postgres-primary   No matching pods found
+31m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+27m         Normal    Started                       pod/shop-api-685cf4d4c4-cmmnz               Container started
+31m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-cmmnz               Startup probe failed: dial tcp 10.244.1.10:8000: connect: connection refused
+31m         Normal    Created                       pod/shop-postgres-1                         Container created
+31m         Normal    Started                       pod/shop-postgres-1                         Container started
+28m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+28m         Normal    Created                       pod/shop-postgres-1                         Container created
+28m         Normal    Started                       pod/shop-postgres-1                         Container started
+29m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.56:8000/healthz": context deadline exceeded
+29m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.56:8000/readyz": context deadline exceeded
+31m         Normal    SuccessfulDelete              replicaset/shop-api-65ddb866f               Deleted pod: shop-api-65ddb866f-xvvtn
+31m         Normal    Killing                       pod/shop-api-65ddb866f-xvvtn                Stopping container api
+29m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.56:8000/healthz": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+29m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.56:8000/readyz": net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+30m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.56:8000/healthz": net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+30m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.56:8000/readyz": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+29m         Warning   Unhealthy                     pod/shop-postgres-1                         Liveness probe failed: Get "https://10.244.0.56:8000/healthz": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+28m         Normal    Killing                       pod/shop-postgres-1                         Container postgres failed liveness probe, will be restarted
+30m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.56:8000/readyz": read tcp 10.244.0.1:54304->10.244.0.56:8000: read: connection reset by peer
+30m         Warning   Unhealthy                     pod/shop-postgres-1                         Readiness probe failed: Get "https://10.244.0.56:8000/readyz": dial tcp 10.244.0.56:8000: connect: connection refused
+29m         Normal    SuccessfulCreate              replicaset/shop-batch-6f48487c4b            Created pod: shop-batch-6f48487c4b-95zll
+29m         Normal    Scheduled                     pod/shop-batch-6f48487c4b-95zll             Successfully assigned shop/shop-batch-6f48487c4b-95zll to lab2-control-plane
+29m         Normal    SuccessfulCreate              replicaset/shop-api-65ddb866f               Created pod: shop-api-65ddb866f-5nx7f
+29m         Normal    Scheduled                     pod/shop-api-65ddb866f-5nx7f                Successfully assigned shop/shop-api-65ddb866f-5nx7f to lab2-control-plane
+28m         Normal    Pulled                        pod/shop-batch-6f48487c4b-95zll             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+28m         Normal    Pulled                        pod/shop-api-65ddb866f-5nx7f                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+28m         Normal    Started                       pod/shop-batch-6f48487c4b-95zll             Container started
+28m         Normal    Created                       pod/shop-batch-6f48487c4b-95zll             Container created
+28m         Normal    Created                       pod/shop-api-65ddb866f-5nx7f                Container created
+28m         Normal    Started                       pod/shop-api-65ddb866f-5nx7f                Container started
+28m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-nxmhd
+28m         Normal    Killing                       pod/shop-batch-656c84867f-nxmhd             Stopping container batch
+28m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-gp5rl
+28m         Normal    Scheduled                     pod/shop-batch-656c84867f-gp5rl             Successfully assigned shop/shop-batch-656c84867f-gp5rl to lab2-worker
+28m         Warning   Unhealthy                     pod/shop-api-65ddb866f-5nx7f                Startup probe failed: dial tcp 10.244.0.58:8000: connect: connection refused
+28m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-65ddb866f from 1 to 0
+28m         Normal    SuccessfulDelete              replicaset/shop-api-65ddb866f               Deleted pod: shop-api-65ddb866f-5nx7f
+28m         Normal    Killing                       pod/shop-api-65ddb866f-5nx7f                Stopping container api
+28m         Normal    Pulled                        pod/shop-batch-656c84867f-gp5rl             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+28m         Normal    Created                       pod/shop-batch-656c84867f-gp5rl             Container created
+28m         Normal    Started                       pod/shop-batch-656c84867f-gp5rl             Container started
+28m         Normal    SuccessfulDelete              replicaset/shop-batch-6f48487c4b            Deleted pod: shop-batch-6f48487c4b-95zll
+28m         Normal    Killing                       pod/shop-batch-6f48487c4b-95zll             Stopping container batch
+28m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+28m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+28m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+28m         Normal    Created                       pod/shop-postgres-1                         Container created
+28m         Normal    Started                       pod/shop-postgres-1                         Container started
+24m         Normal    NoPods                        poddisruptionbudget/shop-postgres-primary   No matching pods found
+28m         Normal    Created                       pod/shop-postgres-1                         Container created
+28m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+28m         Normal    Started                       pod/shop-postgres-1                         Container started
+27m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-tm8bf               Readiness probe failed: Get "http://10.244.1.7:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+27m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-tm8bf               Liveness probe failed: Get "http://10.244.1.7:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+27m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-cmmnz               Readiness probe failed: Get "http://10.244.1.10:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+27m         Warning   Unhealthy                     pod/shop-api-685cf4d4c4-cmmnz               Liveness probe failed: Get "http://10.244.1.10:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+27m         Normal    Killing                       pod/shop-api-685cf4d4c4-tm8bf               Container api failed liveness probe, will be restarted
+27m         Normal    Killing                       pod/shop-api-685cf4d4c4-cmmnz               Container api failed liveness probe, will be restarted
+27m         Normal    Scheduled                     pod/shop-api-64d859758-w6b2t                Successfully assigned shop/shop-api-64d859758-w6b2t to lab2-control-plane
+27m         Normal    SuccessfulCreate              replicaset/shop-api-64d859758               Created pod: shop-api-64d859758-w6b2t
+27m         Normal    Pulled                        pod/shop-api-64d859758-w6b2t                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+27m         Normal    Started                       pod/shop-api-64d859758-w6b2t                Container started
+27m         Normal    Created                       pod/shop-api-64d859758-w6b2t                Container created
+27m         Normal    SuccessfulDelete              replicaset/shop-api-685cf4d4c4              Deleted pod: shop-api-685cf4d4c4-cmmnz
+27m         Normal    Created                       pod/shop-api-64d859758-t629l                Container created
+27m         Normal    ScalingReplicaSet             deployment/shop-api                         Scaled down replica set shop-api-685cf4d4c4 from 2 to 1
+27m         Normal    Killing                       pod/shop-api-685cf4d4c4-cmmnz               Stopping container api
+27m         Normal    Scheduled                     pod/shop-api-64d859758-t629l                Successfully assigned shop/shop-api-64d859758-t629l to lab2-control-plane
+27m         Normal    Started                       pod/shop-api-64d859758-t629l                Container started
+27m         Normal    SuccessfulCreate              replicaset/shop-api-64d859758               Created pod: shop-api-64d859758-t629l
+27m         Normal    Pulled                        pod/shop-api-64d859758-t629l                Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+27m         Normal    Killing                       pod/shop-api-685cf4d4c4-tm8bf               Stopping container api
+27m         Normal    SuccessfulDelete              replicaset/shop-api-685cf4d4c4              Deleted pod: shop-api-685cf4d4c4-tm8bf
+26m         Warning   Unhealthy                     pod/shop-api-64d859758-w6b2t                Readiness probe failed: Get "http://10.244.0.60:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+26m         Warning   Unhealthy                     pod/shop-api-64d859758-w6b2t                Liveness probe failed: Get "http://10.244.0.60:8000/health": context deadline exceeded (Client.Timeout exceeded while awaiting headers)
+24m         Normal    Killing                       pod/shop-postgres-1                         Stopping container postgres
+24m         Normal    Scheduled                     pod/shop-worker-58d87b7766-pqbbg            Successfully assigned shop/shop-worker-58d87b7766-pqbbg to lab2-worker
+24m         Normal    Started                       pod/shop-api-58b6dd6cbd-rtbl7               Container started
+24m         Normal    Scheduled                     pod/shop-api-58b6dd6cbd-rtbl7               Successfully assigned shop/shop-api-58b6dd6cbd-rtbl7 to lab2-control-plane
+24m         Normal    Pulled                        pod/shop-api-58b6dd6cbd-rtbl7               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+24m         Normal    Created                       pod/shop-api-58b6dd6cbd-rtbl7               Container created
+24m         Normal    SuccessfulCreate              replicaset/shop-worker-58d87b7766           Created pod: shop-worker-58d87b7766-pqbbg
+24m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled up replica set shop-worker-58d87b7766 from 0 to 1
+24m         Normal    Started                       pod/shop-worker-58d87b7766-pqbbg            Container started
+24m         Normal    Created                       pod/shop-worker-58d87b7766-pqbbg            Container created
+24m         Normal    SuccessfulCreate              replicaset/shop-api-58b6dd6cbd              Created pod: shop-api-58b6dd6cbd-rtbl7
+24m         Normal    Pulled                        pod/shop-worker-58d87b7766-pqbbg            Container image "docker.io/library/shop:1.1.1" already present on machine and can be accessed by the pod
+24m         Normal    Started                       pod/shop-postgres-1                         Container started
+24m         Normal    Created                       pod/shop-postgres-1                         Container created
+24m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1" already present on machine and can be accessed by the pod
+24m         Normal    Scheduled                     pod/shop-postgres-1                         Successfully assigned shop/shop-postgres-1 to lab2-control-plane
+24m         Normal    Started                       pod/shop-postgres-1                         Container started
+24m         Normal    Pulled                        pod/shop-postgres-1                         Container image "ghcr.io/cloudnative-pg/postgresql:17.7" already present on machine and can be accessed by the pod
+24m         Warning   Unhealthy                     pod/shop-api-58b6dd6cbd-rtbl7               Startup probe failed: dial tcp 10.244.0.62:8000: connect: connection refused
+24m         Warning   Unhealthy                     pod/shop-worker-58d87b7766-pqbbg            Startup probe failed: dial tcp 10.244.1.12:8000: connect: connection refused
+24m         Normal    Created                       pod/shop-postgres-1                         Container created
+24m         Normal    SuccessfulDelete              replicaset/shop-worker-5b95c779cd           Deleted pod: shop-worker-5b95c779cd-dlblq
+24m         Normal    Started                       pod/shop-worker-58d87b7766-mwtfz            Container started
+24m         Normal    Killing                       pod/shop-api-64d859758-w6b2t                Stopping container api
+24m         Normal    Pulled                        pod/shop-api-58b6dd6cbd-7sr7z               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+24m         Normal    Created                       pod/shop-api-58b6dd6cbd-7sr7z               Container created
+24m         Normal    Created                       pod/shop-worker-58d87b7766-mwtfz            Container created
+24m         Normal    SuccessfulCreate              replicaset/shop-worker-58d87b7766           Created pod: shop-worker-58d87b7766-mwtfz
+24m         Normal    Pulled                        pod/shop-worker-58d87b7766-mwtfz            Container image "docker.io/library/shop:1.1.1" already present on machine and can be accessed by the pod
+24m         Normal    SuccessfulCreate              replicaset/shop-api-58b6dd6cbd              Created pod: shop-api-58b6dd6cbd-7sr7z
+24m         Normal    Scheduled                     pod/shop-api-58b6dd6cbd-7sr7z               Successfully assigned shop/shop-api-58b6dd6cbd-7sr7z to lab2-worker
+24m         Normal    Scheduled                     pod/shop-worker-58d87b7766-mwtfz            Successfully assigned shop/shop-worker-58d87b7766-mwtfz to lab2-control-plane
+24m         Normal    Killing                       pod/shop-worker-5b95c779cd-dlblq            Stopping container worker
+24m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled down replica set shop-worker-5b95c779cd from 2 to 1
+24m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled up replica set shop-worker-58d87b7766 from 1 to 2
+24m         Normal    SuccessfulDelete              replicaset/shop-api-64d859758               Deleted pod: shop-api-64d859758-w6b2t
+24m         Normal    Started                       pod/shop-api-58b6dd6cbd-7sr7z               Container started
+24m         Warning   Unhealthy                     pod/shop-worker-58d87b7766-mwtfz            Startup probe failed: dial tcp 10.244.0.64:8000: connect: connection refused
+24m         Warning   Unhealthy                     pod/shop-worker-5b95c779cd-dlblq            Readiness probe failed: Get "http://10.244.1.5:8000/health": dial tcp 10.244.1.5:8000: connect: connection refused
+24m         Normal    SuccessfulDelete              replicaset/shop-api-64d859758               Deleted pod: shop-api-64d859758-t629l
+24m         Normal    Killing                       pod/shop-api-64d859758-t629l                Stopping container api
+24m         Normal    ScalingReplicaSet             deployment/shop-worker                      Scaled down replica set shop-worker-5b95c779cd from 1 to 0
+24m         Normal    Killing                       pod/shop-worker-5b95c779cd-rz4jm            Stopping container worker
+24m         Normal    SuccessfulDelete              replicaset/shop-worker-5b95c779cd           Deleted pod: shop-worker-5b95c779cd-rz4jm
+24m         Warning   Unhealthy                     pod/shop-api-64d859758-t629l                Readiness probe failed: Get "http://10.244.0.61:8000/health": dial tcp 10.244.0.61:8000: connect: connection refused
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-s4pmn
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-s4pmn             Successfully assigned shop/shop-batch-656c84867f-s4pmn to lab2-control-plane
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-tdwd4
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-hfmx2
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-4dbhm
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-smkk7
+21m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            (combined from similar events): Created pod: shop-batch-656c84867f-9pglx
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-hfmx2
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-s4pmn
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-tdwd4
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-dzww2
+23m         Normal    Killing                       pod/shop-batch-656c84867f-tdwd4             Stopping container batch
+23m         Normal    Started                       pod/shop-batch-656c84867f-tdwd4             Container started
+23m         Normal    Scheduled                     pod/shop-batch-6d984849f5-vtrfp             Successfully assigned shop/shop-batch-6d984849f5-vtrfp to lab2-worker
+23m         Normal    Pulled                        pod/shop-batch-6d984849f5-vtrfp             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Created                       pod/shop-batch-6d984849f5-vtrfp             Container created
+23m         Normal    Started                       pod/shop-batch-6d984849f5-vtrfp             Container started
+23m         Normal    Created                       pod/shop-batch-656c84867f-tdwd4             Container created
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-x56jl             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-tdwd4             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-vtrfp
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-8vr69
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-m6gsf
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-x56jl
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-ljfdn
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-tdwd4             Successfully assigned shop/shop-batch-656c84867f-tdwd4 to lab2-worker
+23m         Normal    Started                       pod/shop-batch-656c84867f-smkk7             Container started
+23m         Normal    Created                       pod/shop-batch-656c84867f-smkk7             Container created
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-smkk7             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-smkk7             Successfully assigned shop/shop-batch-656c84867f-smkk7 to lab2-control-plane
+23m         Normal    Killing                       pod/shop-batch-656c84867f-s4pmn             Stopping container batch
+23m         Normal    Started                       pod/shop-batch-656c84867f-s4pmn             Container started
+23m         Normal    Created                       pod/shop-batch-656c84867f-s4pmn             Container created
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-s4pmn             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Killing                       pod/shop-batch-656c84867f-hfmx2             Stopping container batch
+23m         Normal    Started                       pod/shop-batch-656c84867f-hfmx2             Container started
+23m         Normal    Created                       pod/shop-batch-656c84867f-hfmx2             Container created
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-hfmx2             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-hfmx2             Successfully assigned shop/shop-batch-656c84867f-hfmx2 to lab2-worker
+23m         Normal    Started                       pod/shop-batch-656c84867f-dzww2             Container started
+23m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-m6gsf             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-ljfdn             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+23m         Normal    Created                       pod/shop-batch-656c84867f-dzww2             Container created
+21m         Normal    ScalingReplicaSet             deployment/shop-batch                       (combined from similar events): Scaled up replica set shop-batch-656c84867f from 0 to 1
+23m         Normal    Started                       pod/shop-batch-6d984849f5-8vr69             Container started
+23m         Normal    Created                       pod/shop-batch-6d984849f5-8vr69             Container created
+23m         Normal    Pulled                        pod/shop-batch-6d984849f5-8vr69             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Scheduled                     pod/shop-batch-6d984849f5-8vr69             Successfully assigned shop/shop-batch-6d984849f5-8vr69 to lab2-control-plane
+23m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled down replica set shop-batch-656c84867f from 6 to 5
+23m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-6d984849f5 from 2 to 4
+23m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled down replica set shop-batch-656c84867f from 8 to 6
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-4dbhm             Successfully assigned shop/shop-batch-656c84867f-4dbhm to lab2-worker
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-4dbhm             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Created                       pod/shop-batch-656c84867f-4dbhm             Container created
+23m         Normal    Started                       pod/shop-batch-656c84867f-4dbhm             Container started
+23m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-6d984849f5 from 0 to 2
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-7fnrm             Successfully assigned shop/shop-batch-656c84867f-7fnrm to lab2-control-plane
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-7fnrm             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Created                       pod/shop-batch-656c84867f-7fnrm             Container created
+23m         Normal    Started                       pod/shop-batch-656c84867f-7fnrm             Container started
+23m         Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-656c84867f from 1 to 8
+23m         Normal    Scheduled                     pod/shop-batch-656c84867f-dzww2             Successfully assigned shop/shop-batch-656c84867f-dzww2 to lab2-control-plane
+23m         Normal    Pulled                        pod/shop-batch-656c84867f-dzww2             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-777f6             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-smkk7
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-777f6
+23m         Normal    Killing                       pod/shop-batch-656c84867f-smkk7             Stopping container batch
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-7fnrm
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-tntz8
+23m         Normal    Started                       pod/shop-batch-6d984849f5-m6gsf             Container started
+23m         Normal    Scheduled                     pod/shop-batch-6d984849f5-m6gsf             Successfully assigned shop/shop-batch-6d984849f5-m6gsf to lab2-worker
+23m         Normal    Pulled                        pod/shop-batch-6d984849f5-m6gsf             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-tntz8             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+23m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-vlz7k             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+23m         Normal    Scheduled                     pod/shop-batch-6d984849f5-vlz7k             Successfully assigned shop/shop-batch-6d984849f5-vlz7k to lab2-control-plane
+23m         Normal    Pulled                        pod/shop-batch-6d984849f5-vlz7k             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+23m         Normal    Created                       pod/shop-batch-6d984849f5-vlz7k             Container created
+23m         Normal    Killing                       pod/shop-batch-656c84867f-4dbhm             Stopping container batch
+23m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-4dbhm
+23m         Normal    Killing                       pod/shop-batch-656c84867f-7fnrm             Stopping container batch
+23m         Normal    Created                       pod/shop-batch-6d984849f5-m6gsf             Container created
+23m         Normal    Started                       pod/shop-batch-6d984849f5-vlz7k             Container started
+23m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-vlz7k
+22m         Normal    SuccessfulCreate              replicaset/shop-api-58b6dd6cbd              Created pod: shop-api-58b6dd6cbd-tq4wv
+22m         Warning   FailedScheduling              pod/shop-api-58b6dd6cbd-7r92q               0/2 nodes are available: 2 Insufficient cpu. preemption: found a potential placement for pod on node lab2-control-plane, preempting 1 victims
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-jqd4d             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+22m         Normal    SuccessfulCreate              replicaset/shop-api-58b6dd6cbd              Created pod: shop-api-58b6dd6cbd-7r92q
+22m         Normal    Preempted                     pod/shop-batch-6d984849f5-m6gsf             Preempted by pod c4d83462-5eb4-4379-be92-718cb617d6b0 on node lab2-worker
+22m         Normal    Killing                       pod/shop-batch-6d984849f5-m6gsf             Stopping container batch
+22m         Normal    Killing                       pod/shop-batch-6d984849f5-vlz7k             Stopping container batch
+22m         Normal    Preempted                     pod/shop-batch-6d984849f5-vlz7k             Preempted by pod 94418834-c5cb-4d64-a360-8d22327093dc on node lab2-control-plane
+22m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            (combined from similar events): Created pod: shop-batch-6d984849f5-jqd4d
+22m         Warning   FailedScheduling              pod/shop-batch-6d984849f5-x7flv             0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to preemptionPolicy=Never.
+22m         Warning   FailedScheduling              pod/shop-api-58b6dd6cbd-tq4wv               0/2 nodes are available: 2 Insufficient cpu. preemption: found a potential placement for pod on node lab2-worker, preempting 1 victims
+22m         Normal    SuccessfulCreate              replicaset/shop-batch-6d984849f5            Created pod: shop-batch-6d984849f5-x7flv
+22m         Normal    Created                       pod/shop-api-58b6dd6cbd-7r92q               Container created
+22m         Normal    Started                       pod/shop-api-58b6dd6cbd-7r92q               Container started
+22m         Normal    Pulled                        pod/shop-api-58b6dd6cbd-7r92q               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+22m         Normal    Scheduled                     pod/shop-api-58b6dd6cbd-tq4wv               Successfully assigned shop/shop-api-58b6dd6cbd-tq4wv to lab2-worker
+22m         Normal    Pulled                        pod/shop-api-58b6dd6cbd-tq4wv               Container image "docker.io/library/shop:1.1.0" already present on machine and can be accessed by the pod
+22m         Normal    Scheduled                     pod/shop-api-58b6dd6cbd-7r92q               Successfully assigned shop/shop-api-58b6dd6cbd-7r92q to lab2-control-plane
+22m         Warning   FailedScheduling              pod/shop-api-58b6dd6cbd-7r92q               0/2 nodes are available: 2 Insufficient cpu. preemption: not eligible due to a terminating pod on the nominated node.
+22m         Normal    Created                       pod/shop-api-58b6dd6cbd-tq4wv               Container created
+22m         Normal    Started                       pod/shop-api-58b6dd6cbd-tq4wv               Container started
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-gp5rl
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-x56jl
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-ljfdn
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-vtrfp
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-8vr69
+21m         Normal    Killing                       pod/shop-batch-6d984849f5-8vr69             Stopping container batch
+21m         Normal    Killing                       pod/shop-api-58b6dd6cbd-tq4wv               Stopping container api
+21m         Normal    Killing                       pod/shop-batch-6d984849f5-vtrfp             Stopping container batch
+21m         Normal    SuccessfulDelete              replicaset/shop-api-58b6dd6cbd              Deleted pod: shop-api-58b6dd6cbd-tq4wv
+21m         Normal    SuccessfulDelete              replicaset/shop-api-58b6dd6cbd              Deleted pod: shop-api-58b6dd6cbd-7r92q
+21m         Normal    Killing                       pod/shop-api-58b6dd6cbd-7r92q               Stopping container api
+21m         Normal    Killing                       pod/shop-batch-656c84867f-gp5rl             Stopping container batch
+21m         Normal    Scheduled                     pod/shop-batch-656c84867f-9pglx             Successfully assigned shop/shop-batch-656c84867f-9pglx to lab2-worker
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-jqd4d
+21m         Normal    Pulled                        pod/shop-batch-656c84867f-9pglx             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+21m         Normal    Killing                       pod/shop-batch-656c84867f-dzww2             Stopping container batch
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-x7flv
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-777f6
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-6d984849f5            Deleted pod: shop-batch-6d984849f5-tntz8
+21m         Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            (combined from similar events): Deleted pod: shop-batch-656c84867f-dzww2
+21m         Normal    Started                       pod/shop-batch-656c84867f-9pglx             Container started
+21m         Normal    Created                       pod/shop-batch-656c84867f-9pglx             Container created
+6m20s       Normal    Pulled                        pod/shop-batch-656c84867f-42dx9             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+6m20s       Normal    Started                       pod/shop-batch-656c84867f-42dx9             Container started
+6m20s       Normal    SuccessfulCreate              replicaset/shop-batch-6d67bd6c9b            Created pod: shop-batch-6d67bd6c9b-vxx5b
+6m20s       Normal    Pulled                        pod/shop-batch-6d67bd6c9b-vxx5b             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+6m20s       Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-42dx9
+6m20s       Normal    Scheduled                     pod/shop-batch-6d67bd6c9b-vxx5b             Successfully assigned shop/shop-batch-6d67bd6c9b-vxx5b to lab2-worker
+6m20s       Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-6d67bd6c9b from 0 to 1
+6m20s       Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-656c84867f from 1 to 2
+6m20s       Normal    Created                       pod/shop-batch-656c84867f-42dx9             Container created
+6m20s       Normal    Scheduled                     pod/shop-batch-656c84867f-42dx9             Successfully assigned shop/shop-batch-656c84867f-42dx9 to lab2-control-plane
+6m19s       Normal    Created                       pod/shop-batch-6d67bd6c9b-vxx5b             Container created
+6m19s       Normal    SuccessfulCreate              replicaset/shop-batch-6d67bd6c9b            Created pod: shop-batch-6d67bd6c9b-crshg
+6m19s       Normal    Started                       pod/shop-batch-6d67bd6c9b-crshg             Container started
+6m19s       Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled up replica set shop-batch-6d67bd6c9b from 1 to 2
+6m19s       Normal    Killing                       pod/shop-batch-656c84867f-42dx9             Stopping container batch
+6m19s       Normal    Scheduled                     pod/shop-batch-6d67bd6c9b-crshg             Successfully assigned shop/shop-batch-6d67bd6c9b-crshg to lab2-worker
+6m19s       Normal    Pulled                        pod/shop-batch-6d67bd6c9b-crshg             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+6m19s       Normal    Started                       pod/shop-batch-6d67bd6c9b-vxx5b             Container started
+6m19s       Normal    Created                       pod/shop-batch-6d67bd6c9b-crshg             Container created
+6m19s       Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-9pglx
+6m19s       Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-42dx9
+6m19s       Normal    ScalingReplicaSet             deployment/shop-batch                       Scaled down replica set shop-batch-656c84867f from 2 to 1
+6m19s       Normal    Killing                       pod/shop-batch-656c84867f-9pglx             Stopping container batch
+6m1s        Warning   Evicted                       pod/shop-batch-6d67bd6c9b-crshg             The node was low on resource: memory. Threshold quantity: 22707Mi, available: 22970692Ki. Container batch was using 341068Ki, request is 96Mi, has larger consumption of memory.
+6m1s        Normal    Killing                       pod/shop-batch-6d67bd6c9b-crshg             Stopping container batch
+5m58s       Normal    SuccessfulCreate              replicaset/shop-batch-6d67bd6c9b            Created pod: shop-batch-6d67bd6c9b-fs989
+5m58s       Warning   FailedScheduling              pod/shop-batch-6d67bd6c9b-fs989             0/2 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint(s). preemption: not eligible due to preemptionPolicy=Never.
+5m47s       Warning   Evicted                       pod/shop-batch-6d67bd6c9b-vxx5b             The node was low on resource: memory. Threshold quantity: 22707Mi, available: 23090232Ki. Container batch was using 556276Ki, request is 96Mi, has larger consumption of memory.
+5m47s       Normal    Killing                       pod/shop-batch-6d67bd6c9b-vxx5b             Stopping container batch
+5m45s       Normal    SuccessfulCreate              replicaset/shop-batch-6d67bd6c9b            Created pod: shop-batch-6d67bd6c9b-nsw2f
+5m45s       Warning   FailedScheduling              pod/shop-batch-6d67bd6c9b-nsw2f             0/2 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint(s). preemption: not eligible due to preemptionPolicy=Never.
+4m49s       Normal    Scheduled                     pod/shop-batch-6d67bd6c9b-nsw2f             Successfully assigned shop/shop-batch-6d67bd6c9b-nsw2f to lab2-worker
+4m49s       Normal    Scheduled                     pod/shop-batch-656c84867f-7x2bk             Successfully assigned shop/shop-batch-656c84867f-7x2bk to lab2-worker
+4m49s       Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-7x2bk
+4m49s       Normal    SuccessfulDelete              replicaset/shop-batch-6d67bd6c9b            Deleted pod: shop-batch-6d67bd6c9b-nsw2f
+4m49s       Normal    Scheduled                     pod/shop-batch-6d67bd6c9b-fs989             Successfully assigned shop/shop-batch-6d67bd6c9b-fs989 to lab2-worker
+4m48s       Normal    Created                       pod/shop-batch-656c84867f-7x2bk             Container created
+4m48s       Normal    SuccessfulDelete              replicaset/shop-batch-6d67bd6c9b            Deleted pod: shop-batch-6d67bd6c9b-fs989
+4m48s       Normal    Started                       pod/shop-batch-6d67bd6c9b-fs989             Container started
+4m48s       Normal    Created                       pod/shop-batch-6d67bd6c9b-fs989             Container created
+4m48s       Normal    Pulled                        pod/shop-batch-656c84867f-7x2bk             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+4m48s       Normal    Started                       pod/shop-batch-656c84867f-7x2bk             Container started
+4m48s       Normal    Pulled                        pod/shop-batch-6d67bd6c9b-fs989             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+4m47s       Normal    Killing                       pod/shop-batch-6d67bd6c9b-fs989             Stopping container batch
+4m9s        Normal    SuccessfulCreate              replicaset/shop-batch-5fbbcb6c9b            Created pod: shop-batch-5fbbcb6c9b-wl727
+4m9s        Normal    Killing                       pod/shop-batch-656c84867f-7x2bk             Stopping container batch
+4m9s        Normal    SuccessfulDelete              replicaset/shop-batch-656c84867f            Deleted pod: shop-batch-656c84867f-7x2bk
+4m9s        Normal    Scheduled                     pod/shop-batch-5fbbcb6c9b-wl727             Successfully assigned shop/shop-batch-5fbbcb6c9b-wl727 to lab2-worker
+4m5s        Normal    Pulled                        pod/shop-batch-5fbbcb6c9b-wl727             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+4m5s        Normal    Created                       pod/shop-batch-5fbbcb6c9b-wl727             Container created
+4m5s        Normal    Started                       pod/shop-batch-5fbbcb6c9b-wl727             Container started
+4m4s        Normal    Pulled                        pod/shop-batch-656c84867f-jmbjz             Container image "docker.io/library/shop-batch:4.0.0" already present on machine and can be accessed by the pod
+4m4s        Normal    Killing                       pod/shop-batch-5fbbcb6c9b-wl727             Stopping container batch
+4m4s        Normal    SuccessfulDelete              replicaset/shop-batch-5fbbcb6c9b            Deleted pod: shop-batch-5fbbcb6c9b-wl727
+4m4s        Normal    Scheduled                     pod/shop-batch-656c84867f-jmbjz             Successfully assigned shop/shop-batch-656c84867f-jmbjz to lab2-worker
+4m4s        Normal    Created                       pod/shop-batch-656c84867f-jmbjz             Container created
+4m4s        Normal    Started                       pod/shop-batch-656c84867f-jmbjz             Container started
+4m4s        Normal    SuccessfulCreate              replicaset/shop-batch-656c84867f            Created pod: shop-batch-656c84867f-jmbjz
+
+$ kubectl --context kind-lab2 -n shop get pdb
+NAME                    MIN AVAILABLE   MAX UNAVAILABLE   ALLOWED DISRUPTIONS   AGE
+shop-api                1               N/A               1                     28m
+shop-postgres-primary   1               N/A               0                     28m

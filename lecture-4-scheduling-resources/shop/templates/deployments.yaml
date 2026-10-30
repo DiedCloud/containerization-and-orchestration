@@ -1,4 +1,5 @@
 {{- range $component, $settings := dict "api" .Values.api "worker" .Values.worker }}
+{{- $strictAntiAffinity := and (eq $component "api") $.Values.placement.enabled (eq $.Values.placement.mechanism "podAntiAffinity") }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -17,8 +18,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: {{ $.Values.rollout.maxSurge }}
-      maxUnavailable: {{ $.Values.rollout.maxUnavailable }}
+      maxSurge: {{ ternary 0 $.Values.rollout.maxSurge $strictAntiAffinity }}
+      maxUnavailable: {{ ternary 1 $.Values.rollout.maxUnavailable $strictAntiAffinity }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ $component }}

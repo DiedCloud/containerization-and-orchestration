@@ -61,7 +61,11 @@ for ax,panel in zip(axes.flat,ranges['panels']):
     for series in panel['response']['data']['result']:
         values=series['values'];labels=series['metric']
         label=labels.get('pod',labels.get('phase',labels.get('alertname','value')))
-        ax.plot([datetime.fromtimestamp(t,timezone.utc) for t,v in values],[float(v) for t,v in values],label=label,linewidth=1)
+        # query_range omits missing samples. Reindex to the requested grid so
+        # matplotlib cannot join two separate firing/traffic episodes.
+        grid=[ranges['start']+15*i for i in range(int((ranges['end']-ranges['start'])/15)+1)]
+        present={round(t,2):float(v) for t,v in values}
+        ax.plot([datetime.fromtimestamp(t,timezone.utc) for t in grid],[present.get(round(t,2),float('nan')) for t in grid],label=label,linewidth=1)
     ax.set_title(panel['title'],fontsize=10);ax.grid(alpha=.2)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M',tz=timezone.utc))
     if panel['title'].startswith('Orders p95'):ax.axhline(.3,color='red',linestyle='--')

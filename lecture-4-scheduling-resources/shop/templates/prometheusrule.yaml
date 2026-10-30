@@ -3,55 +3,45 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ .Release.Name }}-alerts
-  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   groups:
-    - name: shop-health
+    - name: shop-resources
       rules:
-        - alert: ShopApiNoHealthyTargets
+        - alert: ShopOrderSLOBreach
           expr: |
-            (sum(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"}) == 0)
-            or absent(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"})
+            (
+              histogram_quantile(0.95, sum by(le) (rate(shop_http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m]))) > 0.3
+              or
+              (sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order",code!="201"}[2m])) / sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m]))) > 0.01
+            )
+            and on() (sum(increase(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m])) >= 20)
           for: {{ .Values.monitoring.alertFor }}
           labels:
             severity: critical
             namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-api
           annotations:
-            summary: У shop API нет доступных целей сбора метрик
-            description: Проверить Pod, Service endpoints и /metrics, затем пользовательский доступ к API.
-        - alert: ShopApiHighErrorRate
+            summary: SLA оформления заказа нарушен
+            description: p95 выше 300 мс или более 1% ответов не 201; проверить CPU throttling API и PostgreSQL.
+        - alert: ShopBatchUnschedulable
           expr: |
-            (
-              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health",code=~"5.."}[2m]))
-              /
-              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m]))
-              > 0.05
-            )
-            and
-            (
-              sum(increase(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m])) >= 20
-            )
-          for: {{ .Values.monitoring.alertFor }}
-          labels:
-            severity: critical
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-api
-          annotations:
-            summary: Более 5% пользовательских запросов shop API возвращают 5xx
-            description: Проверить логи API, доступность PostgreSQL и последние изменения. Минимум 20 запросов за 2 минуты, probes исключены.
-        - alert: ShopWorkerStalled
-          expr: |
-            (time() - max(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"}) > 30)
-            or absent(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"})
+            sum(kube_pod_status_unschedulable{namespace="{{ .Release.Namespace }}",pod=~"{{ .Release.Name }}-batch-.*"}) > 0
           for: {{ .Values.monitoring.alertFor }}
           labels:
             severity: warning
             namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-worker
           annotations:
-            summary: Ни один worker shop не подтверждает успешную работу с БД
-            description: Проверить реплики worker, их логи и PostgreSQL. Последний успешный опрос старше 30 секунд либо метрики всех worker отсутствуют.
+            summary: Фоновая аналитика не помещается на нодах
+            description: Нехватка requests ожидаема в эксперименте; проверить FailedScheduling, не увеличивать приоритет batch.
+        - alert: ShopNodeMemoryPressure
+          expr: |
+            max(kube_node_status_condition{condition="MemoryPressure",status="true"}) > 0
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+          annotations:
+            summary: На ноде включился MemoryPressure
+            description: Проверить eviction events и потребление batch выше requests; убедиться в доступности критического пути.
 {{- end }}

@@ -87,3 +87,5 @@ SLA этого стенда: при 10 POST /order в секунду p95 кли�
 Официальные описания механизмов: [node-pressure eviction](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/), [приоритет и preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/), [алгоритм KRR](https://github.com/robusta-dev/krr/tree/v1.31.1).
 
 При обновлениях обнаружился дополнительный нюанс разнесения: если считать вместе старую и новую ReplicaSet, rolling update может оставить две финальные API-реплики на одной ноде — старые Pod временно уравновешивали распределение, а затем удалились. Поэтому добавил `matchLabelKeys: [pod-template-hash]`: планировщик сравнивает реплики одной ревизии отдельно. Ограничение влияет на размещение новых Pod, уже размещённые оно само не переселяет.
+
+Для альтернативной required podAntiAffinity chart автоматически использует API rollingUpdate maxSurge=0/maxUnavailable=1. При двух занятых нодах surge-реплике негде разместиться: сначала освобождается один слот, при этом вторая API-реплика остаётся доступной. У выбранного topology spread остаётся обычный maxSurge=1/maxUnavailable=0.
