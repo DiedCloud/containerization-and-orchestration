@@ -9,6 +9,7 @@ kube_context="${KUBE_CONTEXT:-kind-${cluster_name}}"
 kubectl --context "$kube_context" wait --for=condition=Ready \
   clusterpolicy/platform-guardrails --timeout=60s
 kubectl --context "$kube_context" get crd clusters.postgresql.cnpg.io >/dev/null
+bash "$platform_dir/install-monitoring-crds.sh"
 for version in 1.0.0 1.1.0; do
   docker build --build-arg "APP_VERSION=$version" \
     -t "docker.io/library/shop:$version" "$lab_dir/services"
@@ -23,3 +24,4 @@ helm upgrade --install shop "$lab_dir/shop" --kube-context "$kube_context" \
 kubectl --context "$kube_context" wait --for=condition=Ready \
   cluster/shop-postgres -n shop --timeout=180s
 kubectl --context "$kube_context" get pods,svc -n shop
+python3 "$lab_dir/scripts/sync-monitoring.py" --context "$kube_context"

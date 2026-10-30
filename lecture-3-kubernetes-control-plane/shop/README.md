@@ -274,6 +274,16 @@ python3 lecture-3-kubernetes-control-plane/scripts/check-control-plane.py
 Он временно останавливает API-сервер и добавляет один проверочный заказ,
 а локальные результаты перезаписывает.
 
+## Часть 5 — мониторинг
+
+В чарт добавлены два `ServiceMonitor`, `PrometheusRule` с тремя алертами и
+ConfigMap дашборда. Используется существующий стек Лабы 2. Обычный Prometheus
+не читает CRD напрямую: наш одноразовый адаптер читает объекты из Kubernetes
+и обновляет его Helm values, сохраняя старые jobs и правила. После изменения
+мониторинга требуется повторная синхронизация.
+
+[Установка, обоснование трёх алертов и проверка firing](../monitoring/README.md).
+
 Документация: [жизненный цикл static Pod](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/),
 [собственный Pod controller CloudNativePG](https://cloudnative-pg.io/docs/current/controller/),
 [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/),

@@ -1,0 +1,18 @@
+# Only ServiceMonitor and PrometheusRule; no operator or monitoring servers.
+crds:
+  alertmanagerconfigs:
+    enabled: false
+  alertmanagers:
+    enabled: false
+  podmonitors:
+    enabled: false
+  probes:
+    enabled: false
+  prometheusagents:
+    enabled: false
+  prometheuses:
+    enabled: false
+  scrapeconfigs:
+    enabled: false
+  thanosrulers:
+    enabled: false
