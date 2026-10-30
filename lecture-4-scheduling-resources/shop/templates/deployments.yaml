@@ -1,0 +1,95 @@
+{{- range $component, $settings := dict "api" .Values.api "worker" .Values.worker }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-{{ $component }}
+  labels:
+    app: {{ $.Release.Name }}-{{ $component }}
+    app.kubernetes.io/name: {{ $component }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  replicas: {{ $settings.replicas }}
+  revisionHistoryLimit: 5
+  minReadySeconds: {{ $.Values.rollout.minReadySeconds }}
+  progressDeadlineSeconds: {{ $.Values.rollout.progressDeadlineSeconds }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ $.Values.rollout.maxSurge }}
+      maxUnavailable: {{ $.Values.rollout.maxUnavailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $component }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-{{ $component }}
+        app.kubernetes.io/name: {{ $component }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
+    spec:
+      {{- if eq $component "api" }}
+      {{- include "shop.placement" $ | nindent 6 }}
+      {{- end }}
+      automountServiceAccountToken: false
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: {{ $component }}
+          image: {{ printf "%s:%s" $settings.image.repository $settings.image.tag | quote }}
+          imagePullPolicy: {{ $settings.image.pullPolicy }}
+          command: [uvicorn, "{{ $component }}:app", --host, "0.0.0.0", --port, "8000", --timeout-graceful-shutdown, "10"]
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $.Release.Name }}-postgres-app
+                  key: uri
+            - name: HEALTH_FAIL
+              value: {{ $settings.healthFail | toString | quote }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 1
+          # Allow database bootstrap/schema creation before starting liveness.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 2
+            failureThreshold: 90
+          lifecycle:
+            preStop:
+              exec:
+                command: [python, -c, "import time; time.sleep(3)"]
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            {{- toYaml $settings.resources | nindent 12 }}
+{{- end }}
