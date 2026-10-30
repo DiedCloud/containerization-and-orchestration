@@ -1,0 +1,65 @@
+api:
+  replicas: 3
+  image:
+    repository: docker.io/library/shop
+    tag: "1.1.0"
+    pullPolicy: IfNotPresent
+  healthFail: false
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 128Mi
+
+worker:
+  replicas: 2
+  image:
+    repository: docker.io/library/shop
+    tag: "1.1.1"
+    pullPolicy: IfNotPresent
+  healthFail: false
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+monitoring:
+  enabled: true
+  namespace: monitoring
+  interval: 15s
+  scrapeTimeout: 5s
+  alertFor: 30s
+
+rollout:
+  maxSurge: 1
+  maxUnavailable: 0
+  minReadySeconds: 5
+  progressDeadlineSeconds: 60
+
+postgres:
+  image: ghcr.io/cloudnative-pg/postgresql:17.7
+  instances: 1
+  database: shop
+  owner: shop
+  storage:
+    size: 1Gi
+    storageClass: standard
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi

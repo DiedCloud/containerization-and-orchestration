@@ -1,0 +1,95 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-guardrails
+  annotations:
+    policies.kyverno.io/title: Shop platform guardrails
+    # Check Deployment/StatefulSet/etc. templates too, before creating Pods.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob,ReplicaSet,ReplicationController
+spec:
+  background: true
+  webhookConfiguration:
+    failurePolicy: Fail
+    timeoutSeconds: 10
+  rules:
+    - name: require-resource-limits
+      match: &podMatch
+        any:
+          - resources:
+              kinds: [Pod]
+              operations: [CREATE, UPDATE]
+      # Infrastructure has different requirements (e.g. hostNetwork for CNI).
+      # Every other namespace is covered automatically, including future ones.
+      exclude: &infrastructure
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - kube-public
+                - kube-node-lease
+                - local-path-storage
+                - kyverno
+                - monitoring
+                - cnpg-system
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: Every application and init container must have positive CPU and memory limits.
+        foreach:
+          - list: request.object.spec.[containers, initContainers][]
+            pattern:
+              resources:
+                limits:
+                  cpu: ">0"
+                  memory: ">0"
+    - name: require-app-label
+      match: *podMatch
+      exclude: *infrastructure
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: Pod metadata must contain a non-empty app label.
+        pattern:
+          metadata:
+            labels:
+              app: "?*"
+    - name: trusted-image-sources
+      match: *podMatch
+      exclude: *infrastructure
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: Use docker.io/library/* or ghcr.io/cloudnative-pg/* images only.
+        foreach:
+          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
+            deny:
+              conditions:
+                any:
+                  # Kyverno keeps shorthand Docker Library names without /library.
+                  - key: "{{ regex_match('^(docker.io/(library/)?[^/]+|ghcr.io/cloudnative-pg/[^/]+)$', image_normalize(element.image)) }}"
+                    operator: Equals
+                    value: false
+    - name: disallow-privileged
+      match: *podMatch
+      exclude: *infrastructure
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: Privileged containers are forbidden.
+        foreach:
+          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
+            pattern:
+              =(securityContext):
+                =(privileged): false
+    - name: disallow-host-namespaces
+      match: *podMatch
+      exclude: *infrastructure
+      validate:
+        failureAction: Enforce
+        allowExistingViolations: false
+        message: hostNetwork, hostPID and hostIPC must be false or omitted.
+        pattern:
+          spec:
+            =(hostNetwork): false
+            =(hostPID): false
+            =(hostIPC): false

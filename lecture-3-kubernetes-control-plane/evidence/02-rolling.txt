@@ -1,0 +1,22 @@
+{"elapsed": 0.07, "groups": {"74648668f6": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}}, "ready": 3, "active": 3, "terminating": 0}
+COMMAND: helm upgrade shop lecture-3-kubernetes-control-plane/shop --kube-context kind-lab2 -n shop -f lecture-3-kubernetes-control-plane/shop/values.yaml --wait --timeout 2m
+{"elapsed": 3.64, "groups": {"74648668f6": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 1, "ready": 0, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 3, "active": 4, "terminating": 0}
+{"elapsed": 5.99, "groups": {"74648668f6": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 1, "ready": 1, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 4, "active": 4, "terminating": 0}
+{"elapsed": 10.15, "groups": {"74648668f6": {"active": 2, "ready": 2, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 2, "ready": 1, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 3, "active": 4, "terminating": 1}
+{"elapsed": 13.09, "groups": {"74648668f6": {"active": 2, "ready": 2, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 2, "ready": 2, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 4, "active": 4, "terminating": 1}
+{"elapsed": 14.28, "groups": {"74648668f6": {"active": 2, "ready": 2, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 2, "ready": 2, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 4, "active": 4, "terminating": 0}
+{"elapsed": 17.24, "groups": {"74648668f6": {"active": 1, "ready": 1, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 3, "ready": 2, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 3, "active": 4, "terminating": 1}
+{"elapsed": 20.25, "groups": {"74648668f6": {"active": 1, "ready": 1, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 4, "active": 4, "terminating": 1}
+{"elapsed": 20.87, "groups": {"74648668f6": {"active": 1, "ready": 1, "image": "docker.io/library/shop:1.0.0", "healthFail": "false"}, "85768567ff": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 4, "active": 4, "terminating": 0}
+Release "shop" has been upgraded. Happy Helming!
+NAME: shop
+LAST DEPLOYED: Fri Oct 30 04:49:39 2026
+NAMESPACE: shop
+STATUS: deployed
+REVISION: 4
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+{"elapsed": 24.41, "groups": {"85768567ff": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 3, "active": 3, "terminating": 1}
+{"elapsed": 27.94, "groups": {"85768567ff": {"active": 3, "ready": 3, "image": "docker.io/library/shop:1.1.0", "healthFail": "false"}}, "ready": 3, "active": 3, "terminating": 0}
+SUMMARY: {"command": ["helm", "upgrade", "shop", "lecture-3-kubernetes-control-plane/shop", "--kube-context", "kind-lab2", "-n", "shop", "-f", "lecture-3-kubernetes-control-plane/shop/values.yaml", "--wait", "--timeout", "2m"], "returncode": 0, "requests": 282, "errors": 0, "versions": {"1.0.0": 150, "1.1.0": 132}, "min_ready": 3, "max_active": 4, "observation_errors": []}
+PASS: Service kept answering; rollout bounds held

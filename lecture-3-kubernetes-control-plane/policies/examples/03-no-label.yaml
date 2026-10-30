@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: guardrail-no-label
+  namespace: shop
+spec:
+  restartPolicy: Never
+  containers:
+    - name: app
+      image: docker.io/library/shop:1.0.0
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      securityContext:
+        privileged: false
