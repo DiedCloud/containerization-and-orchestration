@@ -69,3 +69,18 @@ placement:
   mechanism: topologySpreadConstraints
   enabled: false
   topologyKey: kubernetes.io/hostname
+
+batch:
+  replicas: 1
+  image: docker.io/library/shop-batch:4.0.0
+  memoryMiB: 64
+  cpuDuty: "0.1"
+  allocationDelay: "0.02"
+  nodeSelector: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 96Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
