@@ -1,0 +1,37 @@
+# Only a smoke-test environment. Kubernetes will use CloudNativePG instead.
+services:
+  postgres:
+    image: postgres:17.7
+    environment:
+      POSTGRES_DB: shop
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: local-smoke-only
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U shop -d shop]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api:
+    image: docker.io/library/shop:1.0.0
+    environment: &database
+      DATABASE_URL: postgresql://shop:local-smoke-only@postgres:5432/shop
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:18080:8000"
+  worker:
+    image: docker.io/library/shop:1.0.0
+    environment: *database
+    command: [uvicorn, "worker:app", --host, "0.0.0.0", --port, "8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+  broken-api:
+    image: docker.io/library/shop:1.0.0
+    environment:
+      <<: *database
+      HEALTH_FAIL: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
