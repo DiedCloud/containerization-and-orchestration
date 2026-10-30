@@ -1,0 +1,23 @@
+{{- range $component, $settings := dict "api" .Values.api "worker" .Values.worker }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Release.Name }}-{{ $component }}
+  labels:
+    app: {{ $.Release.Name }}-{{ $component }}
+    app.kubernetes.io/name: {{ $component }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+spec:
+  type: {{ $settings.service.type }}
+  selector:
+    app.kubernetes.io/name: {{ $component }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+  ports:
+    - name: http
+      port: {{ $settings.service.port }}
+      targetPort: http
+      {{- if eq $settings.service.type "NodePort" }}
+      nodePort: {{ $settings.service.nodePort }}
+      {{- end }}
+{{- end }}
