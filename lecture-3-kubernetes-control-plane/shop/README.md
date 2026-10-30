@@ -211,7 +211,71 @@ python3 lecture-3-kubernetes-control-plane/scripts/check-postgres-recovery.py
 прежнее хранилище и данные и создаёт один проверочный заказ. Повторный запуск
 обновляет локальные результаты.
 
-Документация: [собственный Pod controller CloudNativePG](https://cloudnative-pg.io/docs/current/controller/),
+## Часть 4 — отказ API-сервера
+
+Остановил именно `kube-apiserver` внутри работающей kind-ноды. Это static
+Pod: kubelet читает его манифест из `/etc/kubernetes/manifests`. Временно
+перенёс файл в соседний каталог и через `crictl` дождался отсутствия
+работающего контейнера API-сервера. Kubelet, etcd и приложения не останавливал.
+Простое завершение процесса было бы недостаточно: kubelet запустил бы его
+снова по оставшемуся манифесту.
+
+Управление и обслуживание запросов проверял разными путями:
+
+| Проверка при выключенном API-сервере | Результат |
+| --- | --- |
+| `kubectl apply` тестового ConfigMap | exit 1, `context deadline exceeded` / `EOF` |
+| `helm upgrade` с попыткой увеличить API до 4 реплик | exit 1, `kubernetes cluster unreachable` / `EOF` |
+| `/health` через NodePort | 119 ответов 200, 0 ошибок |
+| `/orders` через NodePort | 110 ответов 200, 0 ошибок |
+| Создание и обработка заказа | Заказ №53 создан и обработан worker при выключенном API-сервере |
+
+Подтверждённый интервал без API-сервера — 25,14 секунды. С учётом этапов
+остановки и восстановления получилось 301 успешное обращение к `/health`
+и 280 к `/orders`, тоже без ошибок. Трафик шёл через существующий NodePort,
+без port-forward, который зависит от API-сервера.
+
+Контейнеры продолжали работать под контролем kubelet; существующие сетевые
+правила Service продолжали направлять запросы к API. Сам API и worker
+обращаются к PostgreSQL напрямую, а не через Kubernetes API. Поэтому
+сохранился весь путь создания и обработки заказа. При этом контроллеры и
+планировщик не могли получать и записывать новое состояние через API-сервер;
+эксперимент не означает, что в этот момент можно развернуть новый сервис.
+
+Вернул манифест в каталог kubelet, дождался `/readyz = ok` и проверил реальные
+операции `kubectl apply/get/delete` на тестовом ConfigMap. Создание во время
+отказа ничего не сохранило; после восстановления объект успешно создался и
+был удалён. Все 6 Pod shop сохранили UID и счётчики перезапусков. Все 52
+прежних заказа сохранились, новый обработанный заказ №53 остался в БД.
+История Helm не изменилась: release `shop` остался на ревизии 6, API — 3/3.
+
+Скрипт восстанавливает файл в `finally`; дополнительно отдельный процесс
+внутри ноды вернёт его через 180 секунд, если основной скрипт прервётся.
+Временный файл находится вне каталога static Pod: kubelet читает там все
+не скрытые файлы, независимо от расширения.
+
+Для скриншотов достаточно сохранённой сводки и текущего состояния:
+
+```bash
+cat lecture-3-kubernetes-control-plane/artifacts.local/04-control-plane/summary.txt
+kubectl --context kind-lab2 get --raw /readyz
+kubectl --context kind-lab2 get pods,cluster -n shop
+```
+
+На снимке нужны ошибки управляющих команд, успешные запросы и обработка
+заказа во время отказа, затем восстановленная управляемость. Подробные
+ошибки команд и CSV находятся в той же локальной папке, исключённой из Git.
+Повторный запуск самого эксперимента:
+
+```bash
+python3 lecture-3-kubernetes-control-plane/scripts/check-control-plane.py
+```
+
+Он временно останавливает API-сервер и добавляет один проверочный заказ,
+а локальные результаты перезаписывает.
+
+Документация: [жизненный цикл static Pod](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/),
+[собственный Pod controller CloudNativePG](https://cloudnative-pg.io/docs/current/controller/),
 [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/),
 [Deployment и rolling update](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/),
 [CloudNativePG](https://github.com/cloudnative-pg/cloudnative-pg),
