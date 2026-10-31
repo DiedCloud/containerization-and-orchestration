@@ -1,0 +1,12 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-dashboard
+  namespace: {{ .Values.monitoring.namespace }}
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  shop.json: |
+    {{- .Files.Get "dashboards/shop.json" | nindent 4 }}
+{{- end }}

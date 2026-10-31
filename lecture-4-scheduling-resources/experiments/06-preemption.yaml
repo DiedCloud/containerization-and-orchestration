@@ -1,0 +1,3 @@
+# Apply after 06-fill.yaml. Additional critical API replicas need CPU slots.
+api:
+  replicas: 4

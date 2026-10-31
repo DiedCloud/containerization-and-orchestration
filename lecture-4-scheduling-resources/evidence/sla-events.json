@@ -1,0 +1,50 @@
+[
+  {
+    "phase": "cpu-sla-start",
+    "time": 1793395611.7704067
+  },
+  {
+    "phase": "cpu-fill-start",
+    "time": 1793395613.6959507
+  },
+  {
+    "phase": "api-preemption-start",
+    "time": 1793395660.4874098
+  },
+  {
+    "phase": "batch-preempted",
+    "time": 1793395661.0
+  },
+  {
+    "phase": "cpu-pressure-end",
+    "time": 1793395700.4458613
+  },
+  {
+    "phase": "memory-sla-start",
+    "time": 1793396636.280632
+  },
+  {
+    "phase": "memory-pressure-start",
+    "time": 1793396636.753112
+  },
+  {
+    "phase": "memory-pressure-observed",
+    "time": 1793396659.2803204
+  },
+  {
+    "phase": "batch-evicted",
+    "time": 1793396659.2803204
+  },
+  {
+    "phase": "memory-pressure-end",
+    "time": 1793396730.5999146
+  },
+  {
+    "phase": "oom-control-start",
+    "time": 1793396767.848012
+  },
+  {
+    "phase": "oom-control-end",
+    "time": 1793396775.4313762
+  }
+]

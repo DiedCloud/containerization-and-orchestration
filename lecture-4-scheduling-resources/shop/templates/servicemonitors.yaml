@@ -1,0 +1,24 @@
+{{- if .Values.monitoring.enabled }}
+{{- range $component := list "api" "worker" }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $.Release.Name }}-{{ $component }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+spec:
+  namespaceSelector:
+    matchNames: [{{ $.Release.Namespace | quote }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $component }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ $.Values.monitoring.interval }}
+      scrapeTimeout: {{ $.Values.monitoring.scrapeTimeout }}
+{{- end }}
+{{- end }}

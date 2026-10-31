@@ -1,0 +1,47 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  groups:
+    - name: shop-resources
+      rules:
+        - alert: ShopOrderSLOBreach
+          expr: |
+            (
+              histogram_quantile(0.95, sum by(le) (rate(shop_http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m]))) > 0.3
+              or
+              (sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order",code!="201"}[2m])) / sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m]))) > 0.01
+            )
+            and on() (sum(increase(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",method="POST",path="/order"}[2m])) >= 20)
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: critical
+            namespace: {{ .Release.Namespace }}
+          annotations:
+            summary: SLA оформления заказа нарушен
+            description: p95 выше 300 мс или более 1% ответов не 201; проверить CPU throttling API и PostgreSQL.
+        - alert: ShopBatchUnschedulable
+          expr: |
+            sum(kube_pod_status_unschedulable{namespace="{{ .Release.Namespace }}",pod=~"{{ .Release.Name }}-batch-.*"}) > 0
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+          annotations:
+            summary: Фоновая аналитика не помещается на нодах
+            description: Нехватка requests ожидаема в эксперименте; проверить FailedScheduling, не увеличивать приоритет batch.
+        - alert: ShopNodeMemoryPressure
+          expr: |
+            max(kube_node_status_condition{condition="MemoryPressure",status="true"}) > 0
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+          annotations:
+            summary: На ноде включился MemoryPressure
+            description: Проверить eviction events и потребление batch выше requests; убедиться в доступности критического пути.
+{{- end }}
