@@ -1,11 +1,10 @@
-"""Check the submitted chart against the measured KRR recommendations and live state."""
+"""Check the submitted chart against the measured KRR recommendations."""
 import json
 from pathlib import Path
-import subprocess
 import yaml
 root=Path(__file__).resolve().parents[1]
 values=yaml.safe_load((root/'shop/values.yaml').read_text())
-report=json.loads((root/'evidence/03-krr-final.json').read_text())
+report=json.loads((root/'evidence/krr.json').read_text())
 for component in ['api','worker','postgres']:
     scan=next(s for s in report['scans'] if s['object']['name']=='shop-'+component)
     r=scan['recommended']['requests']
@@ -15,4 +14,3 @@ for component in ['api','worker','postgres']:
     if component in ['api','postgres']:
         assert values[component]['resources']['requests']==values[component]['resources']['limits'],component
 print('PASS: chart CPU/memory requests match real KRR output; critical limits=requests')
-# This script can also run without kubectl in the KRR tools container.

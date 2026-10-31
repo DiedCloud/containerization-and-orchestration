@@ -32,7 +32,7 @@ for node in nodes:
     quantity=f'{int(reserved*1000)}m'
     subprocess.run(['python3',str(root/'scripts/node-resources.py'),'--node',name,'--reserved-cpu',quantity],check=True)
     reservations[name]={'existing_requests_cpu':str(total),'api_request_cpu':str(request),'batch_slots':2,'reserved_cpu':quantity,'target_allocatable_cpu':str(target)}
-(root/'evidence/06-capacity.json').write_text(json.dumps(reservations,indent=2)+'\n')
+print(json.dumps(reservations, indent=2))
 
 # Do not start filling while the scheduler still sees the previous capacity.
 for _ in range(45):

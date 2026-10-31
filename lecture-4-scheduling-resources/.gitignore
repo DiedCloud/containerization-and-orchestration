@@ -1,3 +1,4 @@
-artifacts.local/
+.tools/
+results/
 __pycache__/
-screenshots/
+*.pyc

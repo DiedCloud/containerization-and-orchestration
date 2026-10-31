@@ -12,8 +12,7 @@ parser.add_argument("--node", default="lab2-worker")
 parser.add_argument("--reserved-cpu", default="14")
 parser.add_argument("--memory-threshold", default="100Mi")
 args = parser.parse_args()
-# The node image includes PyYAML through kubeadm tooling only on some versions;
-# modify the flat sections with the host's Python instead.
+# Preserve the remaining kubelet settings; no YAML package needed on the host.
 config = subprocess.check_output(["docker", "exec", args.node, "cat", "/var/lib/kubelet/config.yaml"], text=True)
 import re
 for key, value in {"kubeReserved": {"cpu": args.reserved_cpu},
