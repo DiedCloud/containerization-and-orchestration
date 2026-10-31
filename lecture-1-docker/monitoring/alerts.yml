@@ -1,0 +1,18 @@
+groups:
+  - name: lab1
+    rules:
+      - alert: Lab1HighMemory
+        expr: (lab1_container_memory_bytes / lab1_container_memory_limit_bytes > 0.8) and on(job, instance) (lab1_container_up == 1)
+        for: 15s
+        annotations:
+          summary: "API uses over 80% of its memory limit: risk of OOM"
+      - alert: Lab1HighCPU
+        expr: (rate(lab1_container_cpu_seconds_total[30s]) / lab1_container_cpu_limit_cores > 0.8) and on(job, instance) (lab1_container_up == 1)
+        for: 15s
+        annotations:
+          summary: "API uses over 80% of its CPU quota: risk of latency"
+      - alert: Lab1ContainerDown
+        expr: (lab1_container_up == 0) or (up{job="lab1-api"} == 0) or absent(up{job="lab1-api"})
+        for: 15s
+        annotations:
+          summary: "API container is stopped or monitoring cannot reach it; check target up"
