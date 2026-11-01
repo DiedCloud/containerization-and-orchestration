@@ -4,6 +4,7 @@
   "internal_requests": 1800,
   "internal_failed": 0,
   "max_start_gap_seconds": 0.10189437866210938,
+  "internal_max_start_gap_seconds": 0.7924766540527344,
   "failed": 0,
   "deleted_pods": 26,
   "unique_deleted_ips": 26,
@@ -11,181 +12,223 @@
     {
       "second": 0,
       "requests": 51,
+      "internal_requests": 11,
       "failed": 0
     },
     {
       "second": 5,
       "requests": 50,
+      "internal_requests": 51,
       "failed": 0
     },
     {
       "second": 10,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 15,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 20,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 25,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 30,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 35,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 40,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 45,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 50,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 55,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 60,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 65,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 70,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 75,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 80,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 85,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 90,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 95,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 100,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 105,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 110,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 115,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 120,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 125,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 130,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 135,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 140,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 145,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 150,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 155,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 160,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 165,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 170,
       "requests": 50,
+      "internal_requests": 50,
       "failed": 0
     },
     {
       "second": 175,
       "requests": 49,
+      "internal_requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 180,
+      "requests": 0,
+      "internal_requests": 38,
       "failed": 0
     }
   ],

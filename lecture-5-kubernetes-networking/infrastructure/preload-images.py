@@ -19,7 +19,8 @@ for workload in workloads:
                 images.add(image)
 images = sorted(images)
 def load(image):
-    subprocess.run(['docker','pull',image],check=True)
+    if subprocess.run(['docker','image','inspect',image],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode:
+        subprocess.run(['docker','pull',image],check=True)
     normalized = image
     if '/' not in image:
         normalized = 'docker.io/library/' + image
@@ -29,13 +30,15 @@ def load(image):
 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
     list(pool.map(load,images))
 # Kubernetes 1.37 remembers failed pull attempts even after a manual import.
-# Exempt only these public Cilium images from credential reverification.
+# Exempt the preloaded public lab images from credential reverification.
 for node in subprocess.check_output(['kind','get','nodes','--name','lab2'],text=True).split():
     config = subprocess.check_output(['docker','exec',node,'cat','/var/lib/kubelet/config.yaml'],text=True)
     config = re.sub(r'^imagePullCredentialsVerificationPolicy:.*\n','',config,flags=re.M)
     # Preserve access to the existing preloaded Lab 2/3 infrastructure too.
     images = json.loads(subprocess.check_output(['docker','exec',node,'crictl','images','-o','json']))['images']
-    repositories = sorted({tag.rsplit(':',1)[0] for image in images for tag in image.get('repoTags',[])})
+    repositories = {tag.rsplit(':',1)[0] for image in images for tag in image.get('repoTags',[])}
+    repositories.update(c['image'].split('@')[0].rsplit(':',1)[0] for w in workloads for key in ['containers','initContainers'] for c in w['spec']['template']['spec'].get(key,[]))
+    repositories = sorted(repositories)
     config = re.sub(r'^preloadedImagesVerificationAllowlist:.*\n','',config,flags=re.M)
     config += '\nimagePullCredentialsVerificationPolicy: NeverVerifyAllowlistedImages\npreloadedImagesVerificationAllowlist: ' + json.dumps(repositories) + '\n'
     subprocess.run(['docker','exec','-i',node,'tee','/var/lib/kubelet/config.yaml'],input=config,text=True,

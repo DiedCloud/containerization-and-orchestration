@@ -106,3 +106,4 @@ networkPolicy:
   operatorPort: 8000
   apiServerCIDRs: [10.96.0.1/32, 172.20.0.2/32]
   nodeCIDRs: [172.20.0.1/32, 172.20.0.2/32, 172.20.0.3/32]
+  externalEntities: [world]

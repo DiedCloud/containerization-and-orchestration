@@ -50,7 +50,7 @@ grafana = json.loads(helm("get", "values", "grafana", "-n", "monitoring", "-o", 
 (args.output / "grafana-before.json").write_text(json.dumps(grafana, indent=2))
 monitors = json.loads(kube("get", "servicemonitor", "-n", "shop", "-l", "app.kubernetes.io/instance=shop", "-o", "json"))["items"]
 rules = json.loads(kube("get", "prometheusrule", "-n", "shop", "-l", "app.kubernetes.io/instance=shop", "-o", "json"))["items"]
-assert (len(monitors), len(rules)) in {(2, 1), (0, 0)}, "Incomplete shop monitoring objects"
+assert (len(monitors), len(rules)) in {(2, 1), (3, 1), (0, 0)}, "Incomplete shop monitoring objects"
 dashboard_enabled = bool(kube("get", "configmap", "shop-dashboard", "-n", "monitoring", "--ignore-not-found", "-o", "name").strip())
 jobs = []
 for monitor in sorted(monitors, key=lambda m: m["metadata"]["name"]):

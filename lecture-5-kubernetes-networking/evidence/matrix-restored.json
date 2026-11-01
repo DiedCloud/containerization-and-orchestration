@@ -41,7 +41,7 @@
   {
     "source": "api",
     "pod": "shop-api-846d9db8cf-hdsgg",
-    "address": "10.244.1.67",
+    "address": "10.244.1.105",
     "target": "api",
     "port": 8000,
     "expected": false,
@@ -80,7 +80,7 @@
   {
     "source": "api",
     "pod": "shop-api-846d9db8cf-lg9cj",
-    "address": "10.244.1.158",
+    "address": "10.244.1.175",
     "target": "api",
     "port": 8000,
     "expected": false,
@@ -119,7 +119,7 @@
   {
     "source": "api",
     "pod": "shop-api-846d9db8cf-nsnnf",
-    "address": "10.244.1.158",
+    "address": "10.244.1.175",
     "target": "api",
     "port": 8000,
     "expected": false,
@@ -168,7 +168,7 @@
   {
     "source": "worker",
     "pod": "shop-worker-569bc4cd6f-2s685",
-    "address": "10.244.0.38",
+    "address": "10.244.0.106",
     "target": "worker",
     "port": 8000,
     "expected": false,
@@ -207,7 +207,7 @@
   {
     "source": "worker",
     "pod": "shop-worker-569bc4cd6f-bk9jk",
-    "address": "10.244.1.133",
+    "address": "10.244.1.211",
     "target": "worker",
     "port": 8000,
     "expected": false,

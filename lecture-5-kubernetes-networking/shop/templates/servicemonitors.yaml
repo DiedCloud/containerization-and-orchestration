@@ -22,3 +22,34 @@ spec:
       scrapeTimeout: {{ $.Values.monitoring.scrapeTimeout }}
 {{- end }}
 {{- end }}
+
+{{- if .Values.monitoring.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-hubble-metrics
+  namespace: kube-system
+  labels: {app: shop-hubble-metrics}
+spec:
+  clusterIP: None
+  selector: {k8s-app: cilium}
+  ports:
+    - {name: hubble-metrics, port: 9965, targetPort: 9965}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-hubble
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  namespaceSelector:
+    matchNames: [kube-system]
+  selector:
+    matchLabels: {app: shop-hubble-metrics}
+  endpoints:
+    - port: hubble-metrics
+      interval: {{ .Values.monitoring.interval }}
+      scrapeTimeout: {{ .Values.monitoring.scrapeTimeout }}
+{{- end }}

@@ -81,14 +81,14 @@ spec:
             matchLabels: {kubernetes.io/metadata.name: {{ $n.operatorNamespace }}}
       ports: [{protocol: TCP, port: {{ $n.operatorPort }}}]
 ---
-{{- range $role := list "apiLabels" "workerLabels" }}
+{{- range $role, $labels := dict "api" $n.apiLabels "worker" $n.workerLabels }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $.Release.Name }}-{{ $role | lower }}-database-egress
+  name: {{ $.Release.Name }}-{{ $role }}-database-egress
 spec:
   podSelector:
-    matchLabels: {{ index $n $role | toJson }}
+    matchLabels: {{ $labels | toJson }}
   policyTypes: [Egress]
   egress:
     - to:

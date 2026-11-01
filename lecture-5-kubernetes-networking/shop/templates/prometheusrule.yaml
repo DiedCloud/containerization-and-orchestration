@@ -3,55 +3,31 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ .Release.Name }}-alerts
-  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   groups:
-    - name: shop-health
+    - name: shop-network
       rules:
-        - alert: ShopApiNoHealthyTargets
-          expr: |
-            (sum(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"}) == 0)
-            or absent(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"})
+        - alert: ShopPolicyDrops
+          expr: sum(increase(hubble_drop_total{reason="POLICY_DENIED",source="shop"}[1m])) > 5
           for: {{ .Values.monitoring.alertFor }}
-          labels:
-            severity: critical
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-api
+          labels: {severity: warning}
           annotations:
-            summary: У shop API нет доступных целей сбора метрик
-            description: Проверить Pod, Service endpoints и /metrics, затем пользовательский доступ к API.
-        - alert: ShopApiHighErrorRate
-          expr: |
-            (
-              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health",code=~"5.."}[2m]))
-              /
-              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m]))
-              > 0.05
-            )
-            and
-            (
-              sum(increase(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m])) >= 20
-            )
+            summary: Политики отклоняют трафик
+            description: Проверить Hubble DROPPED и сопоставить source/destination с матрицей доступа.
+        - alert: ShopDNSFailure
+          expr: sum(increase(hubble_dns_responses_total{rcode!="No Error",destination="shop",query=~"shop-(api|postgres-rw)[.]shop[.]svc[.]cluster[.]local[.]"}[2m])) > 5 or absent(up{job="serviceMonitor/shop/shop-hubble/0"} == 1)
           for: {{ .Values.monitoring.alertFor }}
-          labels:
-            severity: critical
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-api
+          labels: {severity: warning}
           annotations:
-            summary: Более 5% пользовательских запросов shop API возвращают 5xx
-            description: Проверить логи API, доступность PostgreSQL и последние изменения. Минимум 20 запросов за 2 минуты, probes исключены.
-        - alert: ShopWorkerStalled
-          expr: |
-            (time() - max(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"}) > 30)
-            or absent(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"})
+            summary: Ошибки DNS или потеря наблюдаемости Hubble
+            description: Проверить ответы DNS, allow UDP/TCP 53 и доступность Hubble exporter.
+        - alert: ShopOrderConnectivity
+          expr: sum(rate(shop_http_requests_total{namespace="shop",method="POST",path="/order",code!="201"}[1m])) > 0 or sum(up{service="shop-api"}) == 0 or absent(up{service="shop-api"})
           for: {{ .Values.monitoring.alertFor }}
-          labels:
-            severity: warning
-            namespace: {{ .Release.Namespace }}
-            service: {{ .Release.Name }}-worker
+          labels: {severity: critical}
           annotations:
-            summary: Ни один worker shop не подтверждает успешную работу с БД
-            description: Проверить реплики worker, их логи и PostgreSQL. Последний успешный опрос старше 30 секунд либо метрики всех worker отсутствуют.
+            summary: Нарушена связность оформления заказов
+            description: Проверить API -> PostgreSQL и DNS через Hubble, затем сопоставить политики с EndpointSlice.
 {{- end }}

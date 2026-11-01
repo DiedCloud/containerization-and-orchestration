@@ -1,0 +1,130 @@
+{
+  "captured_utc": "2026-11-01T13:25:58.072219+00:00",
+  "groups": [
+    {
+      "name": "shop-cr/shop/shop-alerts/shop-network",
+      "file": "/etc/config/alerting_rules.yml",
+      "rules": [
+        {
+          "state": "firing",
+          "name": "ShopPolicyDrops",
+          "query": "sum(increase(hubble_drop_total{reason=\"POLICY_DENIED\",source=\"shop\"}[1m])) > 5",
+          "duration": 30,
+          "keepFiringFor": 0,
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Проверить Hubble DROPPED и сопоставить source/destination с матрицей доступа.",
+            "summary": "Политики отклоняют трафик"
+          },
+          "alerts": [
+            {
+              "labels": {
+                "alertname": "ShopPolicyDrops",
+                "severity": "warning"
+              },
+              "annotations": {
+                "description": "Проверить Hubble DROPPED и сопоставить source/destination с матрицей доступа.",
+                "summary": "Политики отклоняют трафик"
+              },
+              "state": "firing",
+              "activeAt": "2026-11-01T13:22:04.494600466Z",
+              "value": "1.8666666666666666e+02"
+            }
+          ],
+          "health": "ok",
+          "evaluationTime": 0.000374129,
+          "lastEvaluation": "2026-11-01T13:25:49.496368456Z",
+          "type": "alerting"
+        },
+        {
+          "state": "inactive",
+          "name": "ShopDNSFailure",
+          "query": "sum(increase(hubble_dns_responses_total{destination=\"shop\",query=~\"shop-(api|postgres-rw)[.]shop[.]svc[.]cluster[.]local[.]\",rcode!=\"No Error\"}[2m])) > 5 or absent(up{job=\"serviceMonitor/shop/shop-hubble/0\"} == 1)",
+          "duration": 30,
+          "keepFiringFor": 0,
+          "labels": {
+            "severity": "warning"
+          },
+          "annotations": {
+            "description": "Проверить ответы DNS, allow UDP/TCP 53 и доступность Hubble exporter.",
+            "summary": "Ошибки DNS или потеря наблюдаемости Hubble"
+          },
+          "alerts": [],
+          "health": "ok",
+          "evaluationTime": 0.000193401,
+          "lastEvaluation": "2026-11-01T13:25:49.496749976Z",
+          "type": "alerting"
+        },
+        {
+          "state": "inactive",
+          "name": "ShopOrderConnectivity",
+          "query": "sum(rate(shop_http_requests_total{code!=\"201\",method=\"POST\",namespace=\"shop\",path=\"/order\"}[1m])) > 0 or sum(up{service=\"shop-api\"}) == 0",
+          "duration": 30,
+          "keepFiringFor": 0,
+          "labels": {
+            "severity": "critical"
+          },
+          "annotations": {
+            "description": "Проверить API -> PostgreSQL и DNS через Hubble, затем сопоставить политики с EndpointSlice.",
+            "summary": "Нарушена связность оформления заказов"
+          },
+          "alerts": [],
+          "health": "ok",
+          "evaluationTime": 0.000199685,
+          "lastEvaluation": "2026-11-01T13:25:49.496949034Z",
+          "type": "alerting"
+        }
+      ],
+      "interval": 15,
+      "limit": 0,
+      "evaluationTime": 0.000811743,
+      "lastEvaluation": "2026-11-01T13:25:49.496339408Z"
+    }
+  ],
+  "targets": [
+    {
+      "job": "serviceMonitor/shop/shop-api/0",
+      "service": "shop-api",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-api/0",
+      "service": "shop-api",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-api/0",
+      "service": "shop-api",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-hubble/0",
+      "service": "shop-hubble-metrics",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-hubble/0",
+      "service": "shop-hubble-metrics",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-worker/0",
+      "service": "shop-worker",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "serviceMonitor/shop/shop-worker/0",
+      "service": "shop-worker",
+      "health": "up",
+      "lastError": ""
+    }
+  ]
+}

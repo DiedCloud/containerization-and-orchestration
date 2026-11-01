@@ -1,0 +1,17 @@
+{{- if .Values.networkPolicy.enabled }}
+# kube-proxy SNAT can carry the reserved world identity into the local endpoint.
+# Match the external identity, while keeping ordinary Pod identities isolated.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-external-api
+spec:
+  endpointSelector:
+    matchLabels: {{ .Values.networkPolicy.apiLabels | toJson }}
+  ingress:
+    - fromEntities: {{ .Values.networkPolicy.externalEntities | toJson }}
+      toPorts:
+        - ports:
+            - port: {{ .Values.api.service.port | quote }}
+              protocol: TCP
+{{- end }}
