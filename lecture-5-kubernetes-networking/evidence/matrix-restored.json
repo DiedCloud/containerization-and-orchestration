@@ -1,0 +1,314 @@
+[
+  {
+    "source": "client",
+    "pod": "shop-client-9d4589758-vb5jw",
+    "address": "10.96.183.130",
+    "target": "api",
+    "port": 8000,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "client",
+    "pod": "shop-client-9d4589758-vb5jw",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "client",
+    "pod": "shop-client-9d4589758-vb5jw",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "client",
+    "pod": "shop-client-9d4589758-vb5jw",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-hdsgg",
+    "address": "10.244.1.105",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-hdsgg",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-hdsgg",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-hdsgg",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-lg9cj",
+    "address": "10.244.1.175",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-lg9cj",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-lg9cj",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-lg9cj",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-nsnnf",
+    "address": "10.244.1.175",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-nsnnf",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-nsnnf",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "api",
+    "pod": "shop-api-846d9db8cf-nsnnf",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-2s685",
+    "address": "10.96.183.130",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-2s685",
+    "address": "10.244.0.106",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-2s685",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-2s685",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-bk9jk",
+    "address": "10.96.183.130",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-bk9jk",
+    "address": "10.244.1.211",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-bk9jk",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "worker",
+    "pod": "shop-worker-569bc4cd6f-bk9jk",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "postgres",
+    "pod": "shop-postgres-1",
+    "address": "10.96.183.130",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "postgres",
+    "pod": "shop-postgres-1",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "postgres",
+    "pod": "shop-postgres-1",
+    "address": "127.0.0.1",
+    "target": "postgres",
+    "port": 5432,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "postgres",
+    "pod": "shop-postgres-1",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  },
+  {
+    "source": "stranger",
+    "pod": "shop-stranger-56f89f8d89-s7599",
+    "address": "10.96.183.130",
+    "target": "api",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "stranger",
+    "pod": "shop-stranger-56f89f8d89-s7599",
+    "address": "10.96.125.41",
+    "target": "worker",
+    "port": 8000,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "stranger",
+    "pod": "shop-stranger-56f89f8d89-s7599",
+    "address": "10.96.31.223",
+    "target": "postgres",
+    "port": 5432,
+    "expected": false,
+    "actual": false,
+    "match": true
+  },
+  {
+    "source": "stranger",
+    "pod": "shop-stranger-56f89f8d89-s7599",
+    "target": "DNS",
+    "port": 53,
+    "expected": true,
+    "actual": true,
+    "match": true
+  }
+]

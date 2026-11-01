@@ -1,0 +1,36 @@
+{{- range $role := list "client" "stranger" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Release.Name }}-{{ $role }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {role: {{ $role }}}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Release.Name }}-{{ $role }}
+        role: {{ $role }}
+        app.kubernetes.io/name: {{ $role }}
+        app.kubernetes.io/instance: {{ $.Release.Name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: probe
+          image: {{ printf "%s:%s" $.Values.api.image.repository $.Values.api.image.tag | quote }}
+          imagePullPolicy: IfNotPresent
+          command: [python, -c, "import time; time.sleep(10**8)"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+{{- end }}

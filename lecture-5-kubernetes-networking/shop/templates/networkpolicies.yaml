@@ -1,0 +1,133 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $n := .Values.networkPolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-default-deny
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+{{- if $n.dnsEnabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-dns
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: {{ $n.dnsNamespace }}}
+          podSelector:
+            matchLabels: {{ $n.dnsLabels | toJson }}
+      ports:
+        - {protocol: UDP, port: {{ $n.dnsPort }}}
+        - {protocol: TCP, port: {{ $n.dnsPort }}}
+---
+{{- end }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-client-api
+spec:
+  podSelector:
+    matchLabels: {{ $n.apiLabels | toJson }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {{ $n.clientLabels | toJson }}
+      ports: [{protocol: TCP, port: {{ .Values.api.service.port }}}]
+    # NodePort traffic from the host; node addresses are trusted infrastructure.
+    - from:
+        {{- range $n.nodeCIDRs }}
+        - ipBlock: {cidr: {{ . }}}
+        {{- end }}
+      ports: [{protocol: TCP, port: {{ .Values.api.service.port }}}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-client-egress
+spec:
+  podSelector:
+    matchLabels: {{ $n.clientLabels | toJson }}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: {{ $n.apiLabels | toJson }}
+      ports: [{protocol: TCP, port: {{ .Values.api.service.port }}}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-database-ingress
+spec:
+  podSelector:
+    matchLabels: {{ $n.postgresLabels | toJson }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {{ $n.apiLabels | toJson }}
+        - podSelector:
+            matchLabels: {{ $n.workerLabels | toJson }}
+      ports: [{protocol: TCP, port: {{ $n.databasePort }}}]
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: {{ $n.operatorNamespace }}}
+      ports: [{protocol: TCP, port: {{ $n.operatorPort }}}]
+---
+{{- range $role, $labels := dict "api" $n.apiLabels "worker" $n.workerLabels }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $.Release.Name }}-{{ $role }}-database-egress
+spec:
+  podSelector:
+    matchLabels: {{ $labels | toJson }}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: {{ $n.postgresLabels | toJson }}
+      ports: [{protocol: TCP, port: {{ $n.databasePort }}}]
+---
+{{- end }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-postgres-apiserver
+spec:
+  podSelector:
+    matchLabels: {{ $n.postgresLabels | toJson }}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        {{- range $n.apiServerCIDRs }}
+        - ipBlock: {cidr: {{ . }}}
+        {{- end }}
+      ports: [{protocol: TCP, port: 443}, {protocol: TCP, port: 6443}]
+---
+{{- range $labels := list $n.apiLabels $n.workerLabels }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $.Release.Name }}-monitor-{{ index $labels "app.kubernetes.io/name" }}
+spec:
+  podSelector:
+    matchLabels: {{ $labels | toJson }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: {{ $n.monitoringNamespace }}}
+          podSelector:
+            matchLabels: {{ $n.monitoringLabels | toJson }}
+      ports: [{protocol: TCP, port: 8000}]
+---
+{{- end }}
+{{- end }}

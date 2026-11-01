@@ -1,0 +1,46 @@
+kubeProxyReplacement: false
+ipam:
+  mode: kubernetes
+routingMode: native
+ipv4NativeRoutingCIDR: 10.244.0.0/16
+autoDirectNodeRoutes: true
+operator:
+  replicas: 1
+  image:
+    useDigest: false
+    pullPolicy: Never
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+    image:
+      useDigest: false
+      pullPolicy: Never
+  ui:
+    enabled: true
+    frontend:
+      image:
+        useDigest: false
+        pullPolicy: Never
+    backend:
+      image:
+        useDigest: false
+        pullPolicy: Never
+  metrics:
+    enabled:
+    - dns:query;ignoreAAAA;sourceContext=namespace;destinationContext=namespace
+    - drop:sourceContext=namespace;destinationContext=namespace
+    - tcp:sourceContext=namespace;destinationContext=namespace
+    - flow:sourceContext=namespace;destinationContext=namespace
+prometheus:
+  enabled: true
+image:
+  useDigest: false
+  pullPolicy: Never
+envoy:
+  image:
+    useDigest: false
+    pullPolicy: Never
+# Let the explicit API-server/node CIDRs match Cilium node identities too.
+policyCIDRMatchMode:
+  - nodes

@@ -1,0 +1,33 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  groups:
+    - name: shop-network
+      rules:
+        - alert: ShopPolicyDrops
+          expr: sum(increase(hubble_drop_total{reason="POLICY_DENIED",source="shop"}[1m])) > 5
+          for: {{ .Values.monitoring.alertFor }}
+          labels: {severity: warning}
+          annotations:
+            summary: Политики отклоняют трафик
+            description: Проверить Hubble DROPPED и сопоставить source/destination с матрицей доступа.
+        - alert: ShopDNSFailure
+          expr: sum(increase(hubble_dns_responses_total{rcode!="No Error",destination="shop",query=~"shop-(api|postgres-rw)[.]shop[.]svc[.]cluster[.]local[.]"}[2m])) > 5 or absent(up{job="serviceMonitor/shop/shop-hubble/0"} == 1)
+          for: {{ .Values.monitoring.alertFor }}
+          labels: {severity: warning}
+          annotations:
+            summary: Ошибки DNS или потеря наблюдаемости Hubble
+            description: Проверить ответы DNS, allow UDP/TCP 53 и доступность Hubble exporter.
+        - alert: ShopOrderConnectivity
+          expr: sum(rate(shop_http_requests_total{namespace="shop",method="POST",path="/order",code!="201"}[1m])) > 0 or sum(up{service="shop-api"}) == 0 or absent(up{service="shop-api"})
+          for: {{ .Values.monitoring.alertFor }}
+          labels: {severity: critical}
+          annotations:
+            summary: Нарушена связность оформления заказов
+            description: Проверить API -> PostgreSQL и DNS через Hubble, затем сопоставить политики с EndpointSlice.
+{{- end }}

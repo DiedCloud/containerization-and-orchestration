@@ -1,0 +1,8 @@
+{
+  "url": "http://lab2-control-plane:30080/order (Docker DNS)",
+  "networkPolicyEnabled": true,
+  "requests": 300,
+  "failed": 0,
+  "duration_seconds": 29.89372229576111,
+  "max_duration_ms": 95.72029113769531
+}

@@ -1,0 +1,109 @@
+api:
+  replicas: 3
+  image:
+    repository: docker.io/library/shop
+    tag: "1.1.0"
+    pullPolicy: IfNotPresent
+  healthFail: false
+  service:
+    type: NodePort
+    port: 8000
+    nodePort: 30080
+  resources:
+    requests:
+      cpu: 486m
+      memory: 131Mi
+    limits:
+      cpu: 486m
+      memory: 131Mi
+
+worker:
+  replicas: 2
+  image:
+    repository: docker.io/library/shop
+    tag: "1.1.1"
+    pullPolicy: IfNotPresent
+  healthFail: false
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests:
+      cpu: 217m
+      memory: 100Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+monitoring:
+  enabled: true
+  namespace: monitoring
+  interval: 15s
+  scrapeTimeout: 5s
+  alertFor: 30s
+
+rollout:
+  maxSurge: 1
+  maxUnavailable: 0
+  minReadySeconds: 5
+  progressDeadlineSeconds: 300
+
+postgres:
+  stopDelay: 30
+  smartShutdownTimeout: 10
+  env:
+    - name: GOMAXPROCS
+      value: "1"
+  probes:
+    startup:
+      periodSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 60
+    liveness:
+      timeoutSeconds: 10
+      failureThreshold: 6
+    readiness:
+      timeoutSeconds: 10
+  image: ghcr.io/cloudnative-pg/postgresql:17.7
+  instances: 1
+  database: shop
+  owner: shop
+  storage:
+    size: 1Gi
+    storageClass: standard
+  resources:
+    requests:
+      cpu: 870m
+      memory: 212Mi
+    limits:
+      cpu: 870m
+      memory: 212Mi
+
+placement:
+  # topologySpreadConstraints or podAntiAffinity
+  mechanism: topologySpreadConstraints
+  enabled: true
+  topologyKey: kubernetes.io/hostname
+
+priorities:
+  enabled: false
+pdb:
+  enabled: true
+networkPolicy:
+  enabled: true
+  dnsEnabled: true
+  dnsNamespace: kube-system
+  dnsLabels: {k8s-app: kube-dns}
+  dnsPort: 53
+  clientLabels: {role: client}
+  apiLabels: {app.kubernetes.io/name: api}
+  workerLabels: {app.kubernetes.io/name: worker}
+  postgresLabels: {cnpg.io/cluster: shop-postgres}
+  databasePort: 5432
+  monitoringNamespace: monitoring
+  monitoringLabels: {app.kubernetes.io/name: prometheus}
+  operatorNamespace: cnpg-system
+  operatorPort: 8000
+  apiServerCIDRs: [10.96.0.1/32, 172.20.0.2/32]
+  nodeCIDRs: [172.20.0.1/32, 172.20.0.2/32, 172.20.0.3/32]
+  externalEntities: [world]

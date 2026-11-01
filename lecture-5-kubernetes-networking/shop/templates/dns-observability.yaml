@@ -1,0 +1,22 @@
+{{- if and .Values.networkPolicy.enabled .Values.networkPolicy.dnsEnabled }}
+# Redirect DNS through Cilium's proxy so Hubble can count requests and rcodes.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-dns-observability
+spec:
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: {{ .Values.networkPolicy.dnsNamespace }}
+            {{- range $key, $value := .Values.networkPolicy.dnsLabels }}
+            k8s:{{ $key }}: {{ $value }}
+            {{- end }}
+      toPorts:
+        - ports:
+            - {port: {{ .Values.networkPolicy.dnsPort | quote }}, protocol: ANY}
+          rules:
+            dns:
+              - matchPattern: "*"
+{{- end }}
