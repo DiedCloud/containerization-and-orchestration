@@ -1,0 +1,23 @@
+# Existing kind-lab2 PodCIDRs; kube-proxy continues implementing Services.
+kubeProxyReplacement: false
+ipam:
+  mode: kubernetes
+routingMode: native
+ipv4NativeRoutingCIDR: 10.244.0.0/16
+autoDirectNodeRoutes: true
+operator:
+  replicas: 1
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+  metrics:
+    enabled:
+      - dns:query;ignoreAAAA
+      - drop
+      - tcp
+      - flow
+prometheus:
+  enabled: true
