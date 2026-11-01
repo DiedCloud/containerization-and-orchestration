@@ -1,5 +1,5 @@
-Server IP: 10.244.1.84; expected identity: shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local
-Connecting to 10.244.1.84
+Server IP: 10.244.1.27; expected identity: shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local
+Connecting to 10.244.1.27
 depth=2 CN=root.linkerd.cluster.local
 verify return:1
 depth=1 CN=identity.linkerd.cluster.local
@@ -12,19 +12,19 @@ Certificate chain
  0 s:CN=shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local
    i:CN=identity.linkerd.cluster.local
    a:PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA256
-   v:NotBefore: Nov  1 16:01:42 2026 GMT; NotAfter: Nov  2 16:02:22 2026 GMT
+   v:NotBefore: Nov  1 16:02:46 2026 GMT; NotAfter: Nov  2 16:03:26 2026 GMT
 -----BEGIN CERTIFICATE-----
-MIICATCCAaigAwIBAgIBBDAKBggqhkjOPQQDAjApMScwJQYDVQQDDB5pZGVudGl0
-eS5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjYxMTAxMTYwMTQyWhcNMjYxMTAy
-MTYwMjIyWjBKMUgwRgYDVQQDEz9zaG9wLWFwaS12MS5zaG9wNi5zZXJ2aWNlYWNj
+MIICAjCCAaigAwIBAgIBBzAKBggqhkjOPQQDAjApMScwJQYDVQQDDB5pZGVudGl0
+eS5saW5rZXJkLmNsdXN0ZXIubG9jYWwwHhcNMjYxMTAxMTYwMjQ2WhcNMjYxMTAy
+MTYwMzI2WjBKMUgwRgYDVQQDEz9zaG9wLWFwaS12MS5zaG9wNi5zZXJ2aWNlYWNj
 b3VudC5pZGVudGl0eS5saW5rZXJkLmNsdXN0ZXIubG9jYWwwWTATBgcqhkjOPQIB
-BggqhkjOPQMBBwNCAATXgmAO//AVlZDiIccyixPu2y/DUdJAzrzH3okP6M7aRuUe
-ttw+7bdOL1+9HnDZRV4ahqhHvxe7yMvX2O/5/h3No4GfMIGcMA4GA1UdDwEB/wQE
+BggqhkjOPQMBBwNCAARSYJ/Pbe6DW1MJ+cjT+NQvZjEQTXJTeoF5jJV9FrQ9sl5+
+fq60E3S9V3ca2shYPHksBn47ZbBJMhwN3GTqzFVDo4GfMIGcMA4GA1UdDwEB/wQE
 AwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwHwYDVR0jBBgwFoAU
 Zmgq7GXypw3Zf+mmhCr035wI9GUwSgYDVR0RBEMwQYI/c2hvcC1hcGktdjEuc2hv
 cDYuc2VydmljZWFjY291bnQuaWRlbnRpdHkubGlua2VyZC5jbHVzdGVyLmxvY2Fs
-MAoGCCqGSM49BAMCA0cAMEQCIGDSyFMk62MLq/LNxVeKQTZuRKqIRZvb4D3DXXDX
-wjasAiBbc/Es+WK8dAZUluEzdFMRs8mke2gP16iLZI9oeBuPaA==
+MAoGCCqGSM49BAMCA0gAMEUCIGcKRCh+s7+2ZSHPFR2RuScwkXrBFm+Jr/AiyLIr
+mgtBAiEAzc90b0XY/WvbWFe80l4HaNs/7nWhD+wy/AHdNu63rho=
 -----END CERTIFICATE-----
  1 s:CN=identity.linkerd.cluster.local
    i:CN=root.linkerd.cluster.local
@@ -55,7 +55,7 @@ Peer signing digest: SHA256
 Peer signature type: ecdsa_secp256r1_sha256
 Negotiated TLS1.3 group: X25519MLKEM768
 ---
-SSL handshake has read 2432 bytes and written 1715 bytes
+SSL handshake has read 2433 bytes and written 1715 bytes
 Verification: OK
 Verified peername: shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local
 ---
@@ -70,52 +70,6 @@ Early data was not sent
 Verify return code: 0 (ok)
 ---
 DONE
----
-Post-Handshake New Session Ticket arrived:
-SSL-Session:
-    Protocol  : TLSv1.3
-    Cipher    : TLS_AES_256_GCM_SHA384
-    Session-ID: ACB7249FCDB4B4CCFF69D73784B644C13AE406AF834EA65E5376A81DCE14AE90
-    Session-ID-ctx: 
-    Resumption PSK: 4FE351C7DE29A359737AC14475F7022A9F5DAFF5EBBA7D84917B626FE23F6EAF032D1BCA5316F10FA1FC514502962D15
-    PSK identity: None
-    PSK identity hint: None
-    SRP username: None
-    TLS session ticket lifetime hint: 86400 (seconds)
-    TLS session ticket:
-    0000 - db 2b fc 31 da 49 39 f5-79 5a 0f d4 d8 85 51 22   .+.1.I9.yZ....Q"
-    0010 - 81 ff 01 ef a8 09 38 89-15 14 b2 c6 52 98 b9 1b   ......8.....R...
-
-    Start Time: 1793548956
-    Timeout   : 7200 (sec)
-    Verify return code: 0 (ok)
-    Extended master secret: no
-    Max Early Data: 0
----
-read R BLOCK
----
-Post-Handshake New Session Ticket arrived:
-SSL-Session:
-    Protocol  : TLSv1.3
-    Cipher    : TLS_AES_256_GCM_SHA384
-    Session-ID: BA104F4B1BB249CA4E3118A0D3E4C6072DE85549866A1C2F120D1591D627045B
-    Session-ID-ctx: 
-    Resumption PSK: 85FA5881308DEB39C6FD474F745371548289A03F05C38C74ECB13826C99CD49AE04B9C1422BF13C6C341593F0AFA07EE
-    PSK identity: None
-    PSK identity hint: None
-    SRP username: None
-    TLS session ticket lifetime hint: 86400 (seconds)
-    TLS session ticket:
-    0000 - ed 7b 15 10 d3 23 da 4f-ad e8 4e 44 24 86 dd 22   .{...#.O..ND$.."
-    0010 - 97 e0 ce 08 17 47 aa 36-95 4b 9c d8 18 6a cb 6d   .....G.6.K...j.m
-
-    Start Time: 1793548956
-    Timeout   : 7200 (sec)
-    Verify return code: 0 (ok)
-    Extended master secret: no
-    Max Early Data: 0
----
-read R BLOCK
 
 Authenticated request through meshed client:
 v1
@@ -123,9 +77,17 @@ v1
 Plaintext request without mesh (must be denied):
 HTTP 403
 
+Request between two different API pods:
+v1
+
 Mesh inbound TLS counters (certificate identity, not IP):
-tcp_open_total{direction="inbound",peer="dst",tls="no_identity",no_tls_reason="loopback"} 7
-tcp_open_total{direction="inbound",peer="src",target_addr="10.244.1.84:8000",target_ip="10.244.1.84",target_port="8000",tls="no_identity",no_tls_reason="no_tls_from_remote",srv_group="policy.linkerd.io",srv_kind="server",srv_name="shop-api",srv_port="8000"} 10
-tcp_open_total{direction="inbound",peer="src",target_addr="0.0.0.0:4191",target_ip="0.0.0.0",target_port="4191",tls="no_identity",no_tls_reason="no_tls_from_remote",srv_group="",srv_kind="default",srv_name="all-unauthenticated",srv_port="4191"} 7
-tcp_open_total{direction="inbound",peer="src",target_addr="10.244.1.84:8000",target_ip="10.244.1.84",target_port="8000",tls="true",client_id="default.shop6.serviceaccount.identity.linkerd.cluster.local",srv_group="policy.linkerd.io",srv_kind="server",srv_name="shop-api",srv_port="8000"} 4
+tcp_open_total{direction="outbound",peer="dst",authority="shop-api.shop6.svc.cluster.local:8000",target_addr="10.244.1.18:8000",target_ip="10.244.1.18",target_port="8000",tls="true",server_id="shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local",dst_control_plane_ns="linkerd",dst_deployment="shop-api-v1",dst_namespace="shop6",dst_pod="shop-api-v1-584db7c54b-flfzj",dst_pod_template_hash="584db7c54b",dst_service="shop-api",dst_serviceaccount="shop-api-v1",dst_zone="",dst_zone_locality="unknown"} 1
+tcp_open_total{direction="inbound",peer="dst",tls="no_identity",no_tls_reason="loopback"} 29
+tcp_open_total{direction="inbound",peer="src",target_addr="10.244.1.27:8000",target_ip="10.244.1.27",target_port="8000",tls="true",client_id="default.shop6.serviceaccount.identity.linkerd.cluster.local",srv_group="policy.linkerd.io",srv_kind="server",srv_name="shop-api",srv_port="8000"} 2
 tcp_open_total{direction="inbound",peer="src",target_addr="0.0.0.0:4191",target_ip="0.0.0.0",target_port="4191",tls="true",client_id="default.shop6.serviceaccount.identity.linkerd.cluster.local",srv_group="",srv_kind="default",srv_name="all-unauthenticated",srv_port="4191"} 2
+tcp_open_total{direction="inbound",peer="src",target_addr="10.244.1.27:8000",target_ip="10.244.1.27",target_port="8000",tls="no_identity",no_tls_reason="no_tls_from_remote",srv_group="policy.linkerd.io",srv_kind="server",srv_name="shop-api",srv_port="8000"} 31
+tcp_open_total{direction="inbound",peer="src",target_addr="10.244.1.27:8000",target_ip="10.244.1.27",target_port="8000",tls="true",client_id="shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local",srv_group="policy.linkerd.io",srv_kind="server",srv_name="shop-api",srv_port="8000"} 1
+tcp_open_total{direction="outbound",peer="dst",authority="shop-api-v1.shop6.svc.cluster.local:8000",target_addr="10.244.1.18:8000",target_ip="10.244.1.18",target_port="8000",tls="true",server_id="shop-api-v1.shop6.serviceaccount.identity.linkerd.cluster.local",dst_control_plane_ns="linkerd",dst_deployment="shop-api-v1",dst_namespace="shop6",dst_pod="shop-api-v1-584db7c54b-flfzj",dst_pod_template_hash="584db7c54b",dst_service="shop-api-v1",dst_serviceaccount="shop-api-v1",dst_zone="",dst_zone_locality="unknown"} 1
+tcp_open_total{direction="outbound",peer="dst",authority="shop-api-v1.shop6.svc.cluster.local:8000",target_addr="10.244.1.27:8000",target_ip="10.244.1.27",target_port="8000",tls="no_identity",no_tls_reason="loopback",dst_control_plane_ns="linkerd",dst_deployment="shop-api-v1",dst_namespace="shop6",dst_pod="shop-api-v1-584db7c54b-2kmwq",dst_pod_template_hash="584db7c54b",dst_service="shop-api-v1",dst_serviceaccount="shop-api-v1",dst_zone="",dst_zone_locality="unknown"} 1
+tcp_open_total{direction="outbound",peer="src",target_addr="10.96.125.55:8000",target_ip="10.96.125.55",target_port="8000",tls="no_identity",no_tls_reason="loopback"} 1
+tcp_open_total{direction="inbound",peer="src",target_addr="0.0.0.0:4191",target_ip="0.0.0.0",target_port="4191",tls="no_identity",no_tls_reason="no_tls_from_remote",srv_group="",srv_kind="default",srv_name="all-unauthenticated",srv_port="4191"} 29
