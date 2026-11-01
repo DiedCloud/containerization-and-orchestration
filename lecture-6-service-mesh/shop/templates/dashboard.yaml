@@ -1,0 +1,11 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shop6-dashboard
+  namespace: monitoring
+  labels: {grafana_dashboard: "1"}
+data:
+  mesh.json: |
+    {{- .Files.Get "dashboards/mesh.json" | nindent 4 }}
+{{- end }}

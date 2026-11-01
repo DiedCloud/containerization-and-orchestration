@@ -2,12 +2,12 @@ image: {repository: docker.io/library/shop, tag: "6.0.0", pullPolicy: IfNotPrese
 nodeSelector: {kubernetes.io/hostname: lab2-worker}
 api:
   v1: {replicas: 2, flaky: false}
-  v2: {replicas: 0, fail: false}
+  v2: {replicas: 1, fail: false}
   resources:
     requests: {cpu: 100m, memory: 96Mi}
     limits: {cpu: 500m, memory: 192Mi}
 mesh:
-  enabled: false
+  enabled: true
   annotations:
     linkerd.io/inject: enabled
     config.linkerd.io/proxy-cpu-request: 10m
@@ -17,9 +17,9 @@ mesh:
     config.linkerd.io/proxy-init-cpu-limit: 100m
     config.linkerd.io/proxy-init-memory-limit: 64Mi
     config.linkerd.io/skip-outbound-ports: "5432,9090,443"
-traffic: {v2Weight: 10, retries: false}
-gate: {enabled: false, image: docker.io/library/shop-gate:6.0.0}
-monitoring: {enabled: false}
+traffic: {v2Weight: 100, retries: false}
+gate: {enabled: true, image: docker.io/library/shop-gate:6.0.0}
+monitoring: {enabled: true}
 priorities: {enabled: false}
 pdb: {enabled: false}
 postgres:
