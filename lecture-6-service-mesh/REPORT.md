@@ -15,3 +15,11 @@
 Сохранил Kyverno Enforce: разрешил официальный registry `cr.l5d.io/linkerd`, а namespace `linkerd` добавил к инфраструктурным исключениям. Прикладные Pod по-прежнему должны иметь app label, limits и не использовать privileged/host namespaces. Init-контейнеру mesh нужен root и NET_ADMIN внутри сетевого namespace Pod для iptables; это не privileged и не hostNetwork.
 
 Документация: [Helm installation](https://linkerd.io/2-edge/tasks/install-helm/), [traffic shifting](https://linkerd.io/2-edge/tasks/traffic-shifting/), [retries](https://linkerd.io/2-edge/reference/retries/). Повторы и разделение трафика выполняет исходящий прокси: источник запросов тоже должен быть включён в mesh.
+
+## Baseline без mesh
+
+Чарт `shop` продолжает третью–пятую работы: API и CNPG PostgreSQL. Для независимых экспериментов установил отдельный release в `shop6`, не меняя старый `shop` и его данные. Убрал worker, batch и сетевые опыты; добавил две версии API и клиент нагрузки. API и клиент закреплены на `lab2-worker`. Существующий кластер двухнодовый, PostgreSQL и часть мониторинга находятся на control-plane: вместо отдельного однонодового кластера использовал прежнюю инфраструктуру. Это отклонение от облегчённой схемы задания; размещение БД одинаковое в обоих замерах.
+
+Без mesh работают две реплики v1 и один клиент. Нагрузка — 20 настоящих `POST /order` в секунду в течение 120 секунд, без повторов в клиенте. Сохранил [baseline](evidence/baseline.json): задержка каждого клиентского запроса, CPU и средний working set по cAdvisor за то же окно. Отсчёт ресурсов — сумма обеих реплик API. Запросы идут по Kubernetes Service, не через port-forward; port-forward используется только для чтения Prometheus.
+
+![Baseline: готовые Pod без sidecar и результат измерения](screenshots/01-baseline.png)

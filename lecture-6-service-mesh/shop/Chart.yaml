@@ -1,0 +1,5 @@
+apiVersion: v2
+name: shop
+version: 0.6.0
+appVersion: "6.0.0"
+description: Shop service mesh and canary release
