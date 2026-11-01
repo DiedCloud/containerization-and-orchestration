@@ -1,0 +1,11 @@
+{
+  "n": 2000,
+  "counts": {
+    "v1": 1810,
+    "v2": 190
+  },
+  "v2_fraction": 0.095,
+  "expected_v2": 0.1,
+  "approx_95pct_half_width": 0.013148079707698764,
+  "errors": 0
+}
