@@ -1,0 +1,55 @@
+image: {repository: docker.io/library/shop, tag: "6.0.0", pullPolicy: IfNotPresent}
+nodeSelector: {kubernetes.io/hostname: lab2-worker}
+api:
+  v1: {replicas: 2, flaky: false}
+  v2: {replicas: 1, fail: false}
+  resources:
+    requests: {cpu: 100m, memory: 96Mi}
+    limits: {cpu: 500m, memory: 192Mi}
+mesh:
+  enabled: true
+  annotations:
+    linkerd.io/inject: enabled
+    config.linkerd.io/proxy-cpu-request: 10m
+    config.linkerd.io/proxy-cpu-limit: 500m
+    config.linkerd.io/proxy-memory-request: 20Mi
+    config.linkerd.io/proxy-memory-limit: 128Mi
+    config.linkerd.io/proxy-init-cpu-limit: 100m
+    config.linkerd.io/proxy-init-memory-limit: 64Mi
+    config.linkerd.io/skip-outbound-ports: "5432,9090,443"
+traffic: {v2Weight: 100, retries: false}
+gate: {enabled: true, image: docker.io/library/shop-gate:6.0.0}
+monitoring: {enabled: true}
+priorities: {enabled: false}
+pdb: {enabled: false}
+postgres:
+  stopDelay: 30
+  smartShutdownTimeout: 10
+  env:
+    - name: GOMAXPROCS
+      value: "1"
+  probes:
+    startup:
+      periodSeconds: 5
+      timeoutSeconds: 10
+      failureThreshold: 60
+    liveness:
+      timeoutSeconds: 10
+      failureThreshold: 6
+    readiness:
+      timeoutSeconds: 10
+  image: ghcr.io/cloudnative-pg/postgresql:17.7
+  instances: 1
+  database: shop
+  owner: shop
+  storage:
+    size: 1Gi
+    storageClass: standard
+  resources:
+    requests:
+      cpu: 870m
+      memory: 212Mi
+    limits:
+      cpu: 870m
+      memory: 212Mi
+

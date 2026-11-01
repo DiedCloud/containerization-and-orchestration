@@ -1,0 +1,83 @@
+{
+  "targets": [
+    {
+      "pod": "shop-client-69ddcb7849-jhvlx",
+      "up": 1.0
+    },
+    {
+      "pod": "shop-api-v1-6f5c5d8985-vl76z",
+      "up": 1.0
+    },
+    {
+      "pod": "shop-api-v2-7bff5fbb8d-wphch",
+      "up": 1.0
+    },
+    {
+      "pod": "shop-api-v1-6f5c5d8985-72rsm",
+      "up": 1.0
+    }
+  ],
+  "rules": [
+    {
+      "name": "CanaryErrors",
+      "health": "ok",
+      "state": "inactive"
+    },
+    {
+      "name": "CanarySlow",
+      "health": "ok",
+      "state": "inactive"
+    },
+    {
+      "name": "MeshTelemetryMissing",
+      "health": "ok",
+      "state": "inactive"
+    }
+  ],
+  "observedCanaryErrorsFiring": true,
+  "dashboard": {
+    "uid": "shop6-mesh",
+    "provisioned": true,
+    "panels": 6
+  },
+  "queries": [
+    {
+      "panel": "Backend errors by version",
+      "ref": "A",
+      "series": 2
+    },
+    {
+      "panel": "Backend p95 by version, ms",
+      "ref": "A",
+      "series": 2
+    },
+    {
+      "panel": "Observed traffic share",
+      "ref": "A",
+      "series": 2
+    },
+    {
+      "panel": "Mesh retry attempts and recoveries",
+      "ref": "A",
+      "series": 1
+    },
+    {
+      "panel": "Mesh retry attempts and recoveries",
+      "ref": "B",
+      "series": 1
+    },
+    {
+      "panel": "mTLS authenticated API connections",
+      "ref": "A",
+      "series": 1
+    },
+    {
+      "panel": "Release alerts",
+      "ref": "A",
+      "series": 0
+    }
+  ],
+  "finalV2Weight": 100,
+  "gateCompleted": true,
+  "versionCheck": "30/30 v2"
+}

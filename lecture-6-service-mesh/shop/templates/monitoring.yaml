@@ -1,0 +1,39 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: shop-mesh
+  labels: {app.kubernetes.io/instance: shop6}
+spec:
+  selector:
+    matchLabels: {mesh-metrics: "true"}
+  namespaceSelector:
+    matchNames: [shop6]
+  endpoints:
+  - {port: proxy-metrics, interval: 5s, scrapeTimeout: 3s}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shop-mesh
+  labels: {app.kubernetes.io/instance: shop6}
+spec:
+  groups:
+  - name: shop6-mesh
+    rules:
+    - alert: CanaryErrors
+      expr: sum(rate(response_total{namespace="shop6",direction="inbound",deployment="shop-api-v2",target_port="8000",route_name!="probe",status_code=~"5.."}[1m])) / sum(rate(response_total{namespace="shop6",direction="inbound",deployment="shop-api-v2",target_port="8000",route_name!="probe"}[1m])) > 0.05
+      for: 15s
+      labels: {severity: critical}
+      annotations: {summary: "Canary backend errors exceed 5%"}
+    - alert: CanarySlow
+      expr: histogram_quantile(0.95,sum by(le)(rate(response_latency_ms_bucket{namespace="shop6",direction="inbound",deployment="shop-api-v2",target_port="8000",route_name!="probe"}[1m]))) > 250
+      for: 30s
+      labels: {severity: warning}
+      annotations: {summary: "Canary p95 exceeds 250 ms"}
+    - alert: MeshTelemetryMissing
+      expr: absent(up{job="shop6-mesh"}) or min(up{job="shop6-mesh"}) == 0
+      for: 30s
+      labels: {severity: critical}
+      annotations: {summary: "Release gate cannot trust missing proxy metrics"}
+{{- end }}

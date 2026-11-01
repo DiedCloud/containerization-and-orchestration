@@ -1,0 +1,192 @@
+{
+  "uid": "shop6-mesh",
+  "title": "Shop \u2014 Release autopilot / Linkerd",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Backend errors by version",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "(sum by(version)(rate(response_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\",status_code=~\"5..\"}[1m])) or on(version) (0 * sum by(version)(rate(response_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\"}[1m])))) / sum by(version)(rate(response_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\"}[1m]))",
+          "legendFormat": "{{version}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "Backend p95 by version, ms",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95,sum by(le,version)(rate(response_latency_ms_bucket{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\"}[1m])))",
+          "legendFormat": "{{version}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "title": "Observed traffic share",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by(version)(rate(response_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\"}[1m])) / ignoring(version) group_left sum(rate(response_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",route_name!=\"probe\",deployment=~\"shop-api-v[12]\"}[1m]))",
+          "legendFormat": "{{version}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "title": "Mesh retry attempts and recoveries",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(outbound_http_route_retry_requests_total{namespace=\"shop6\",route_name=\"shop-api\"}[1m]))",
+          "legendFormat": "Retry attempts",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(outbound_http_route_retry_successes_total{namespace=\"shop6\",route_name=\"shop-api\"}[1m]))",
+          "legendFormat": "Successful retries",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "title": "mTLS authenticated API connections",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "sum by(client_id)(rate(tcp_open_total{namespace=\"shop6\",direction=\"inbound\",target_port=\"8000\",tls=\"true\"}[1m]))",
+          "legendFormat": "{{client_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "min": 0
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "title": "Release alerts",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "ALERTS{alertname=~\"CanaryErrors|CanarySlow|MeshTelemetryMissing\"}",
+          "legendFormat": "{{alertname}} {{alertstate}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      }
+    }
+  ]
+}

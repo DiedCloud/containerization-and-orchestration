@@ -1,0 +1,19 @@
+{{- if .Values.mesh.enabled }}
+apiVersion: policy.linkerd.io/v1beta2
+kind: HTTPRoute
+metadata:
+  name: shop-api
+  annotations:
+    {{- if .Values.traffic.retries }}
+    retry.linkerd.io/http: "5xx"
+    retry.linkerd.io/limit: "4"
+    retry.linkerd.io/timeout: "200ms"
+    {{- end }}
+spec:
+  parentRefs:
+  - {group: "", kind: Service, name: shop-api, port: 8000}
+  rules:
+  - backendRefs:
+    - {group: "", kind: Service, name: shop-api-v1, port: 8000, weight: {{ sub 100 (.Values.traffic.v2Weight | int) }}}
+    - {group: "", kind: Service, name: shop-api-v2, port: 8000, weight: {{ .Values.traffic.v2Weight }}}
+{{- end }}
