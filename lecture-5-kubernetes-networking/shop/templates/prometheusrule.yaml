@@ -1,0 +1,57 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  groups:
+    - name: shop-health
+      rules:
+        - alert: ShopApiNoHealthyTargets
+          expr: |
+            (sum(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"}) == 0)
+            or absent(up{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api"})
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: critical
+            namespace: {{ .Release.Namespace }}
+            service: {{ .Release.Name }}-api
+          annotations:
+            summary: У shop API нет доступных целей сбора метрик
+            description: Проверить Pod, Service endpoints и /metrics, затем пользовательский доступ к API.
+        - alert: ShopApiHighErrorRate
+          expr: |
+            (
+              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health",code=~"5.."}[2m]))
+              /
+              sum(rate(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m]))
+              > 0.05
+            )
+            and
+            (
+              sum(increase(shop_http_requests_total{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-api",path!="/health"}[2m])) >= 20
+            )
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: critical
+            namespace: {{ .Release.Namespace }}
+            service: {{ .Release.Name }}-api
+          annotations:
+            summary: Более 5% пользовательских запросов shop API возвращают 5xx
+            description: Проверить логи API, доступность PostgreSQL и последние изменения. Минимум 20 запросов за 2 минуты, probes исключены.
+        - alert: ShopWorkerStalled
+          expr: |
+            (time() - max(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"}) > 30)
+            or absent(shop_worker_last_success_timestamp_seconds{namespace="{{ .Release.Namespace }}",service="{{ .Release.Name }}-worker"})
+          for: {{ .Values.monitoring.alertFor }}
+          labels:
+            severity: warning
+            namespace: {{ .Release.Namespace }}
+            service: {{ .Release.Name }}-worker
+          annotations:
+            summary: Ни один worker shop не подтверждает успешную работу с БД
+            description: Проверить реплики worker, их логи и PostgreSQL. Последний успешный опрос старше 30 секунд либо метрики всех worker отсутствуют.
+{{- end }}

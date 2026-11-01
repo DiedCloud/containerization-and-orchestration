@@ -1,0 +1,33 @@
+$ kubectl -n shop get pods -o wide
+NAME                             READY   STATUS      RESTARTS   AGE   IP             NODE                 NOMINATED NODE   READINESS GATES
+shop-api-76745c858b-ms55p        0/1     Completed   0          36s   10.244.0.135   lab2-control-plane   <none>           <none>
+shop-api-846d9db8cf-fgdhq        1/1     Running     0          56s   10.244.0.21    lab2-control-plane   <none>           <none>
+shop-api-846d9db8cf-ngplf        1/1     Running     0          36s   10.244.1.162   lab2-worker          <none>           <none>
+shop-api-846d9db8cf-wpgts        1/1     Running     0          16s   10.244.0.174   lab2-control-plane   <none>           <none>
+shop-client-9d4589758-vb5jw      1/1     Running     0          56s   10.244.1.30    lab2-worker          <none>           <none>
+shop-postgres-1                  1/1     Running     0          52s   10.244.0.193   lab2-control-plane   <none>           <none>
+shop-stranger-56f89f8d89-s7599   1/1     Running     0          56s   10.244.1.148   lab2-worker          <none>           <none>
+shop-worker-569bc4cd6f-m8q92     1/1     Running     0          36s   10.244.0.133   lab2-control-plane   <none>           <none>
+shop-worker-569bc4cd6f-r5nhb     1/1     Running     0          55s   10.244.1.81    lab2-worker          <none>           <none>
+$ kubectl -n shop exec shop-api-846d9db8cf-fgdhq -- python -c import socket,fcntl,struct,pathlib
+s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+print("eth0 IP:",socket.inet_ntoa(fcntl.ioctl(s.fileno(),0x8915,struct.pack("256s",b"eth0"))[20:24]))
+for key in ["ifindex","iflink","address","mtu"]:
+ print("eth0",key,pathlib.Path("/sys/class/net/eth0/"+key).read_text().strip())
+eth0 IP: 10.244.0.21
+eth0 ifindex 54
+eth0 iflink 55
+eth0 address 96:71:fa:46:1e:8d
+eth0 mtu 1500
+$ docker exec lab2-control-plane ip -d link show lxce3bd250598fc
+55: lxce3bd250598fc@if54: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 9e:db:7b:0f:00:b7 brd ff:ff:ff:ff:ff:ff link-netns cni-5c8e413d-a123-bc0b-36ab-f5c872d2cd69 promiscuity 0 allmulti 0 minmtu 68 maxmtu 65535 
+    veth addrgenmode eui64 numtxqueues 16 numrxqueues 16 gso_max_size 65536 gso_max_segs 65535 tso_max_size 524280 tso_max_segs 65535 gro_max_size 65536 gso_ipv4_max_size 65536 gro_ipv4_max_size 65536
+$ docker exec lab2-control-plane ip route get 10.244.1.162
+10.244.1.162 via 172.20.0.3 dev eth0 src 172.20.0.2 uid 0 
+    cache
+Direct cross-node request: lab2-control-plane -> lab2-worker
+$ kubectl -n shop exec shop-api-846d9db8cf-fgdhq -- python -c import urllib.request;print(urllib.request.urlopen("http://10.244.1.162:8000/health",timeout=3).read().decode())
+ok
+$ kubectl -n kube-system get configmap kube-proxy: selected mode
+mode: iptables

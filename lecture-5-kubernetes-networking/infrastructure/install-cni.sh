@@ -4,7 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 kubectl config use-context kind-lab2
 helm repo add cilium https://helm.cilium.io/
-helm upgrade --install cilium cilium/cilium --version 1.18.3 \
+python3 preload-images.py
+helm upgrade --install cilium cilium/cilium --version 1.20.4 \
   -n kube-system -f cilium-values.yaml
 kubectl -n kube-system rollout status daemonset/cilium --timeout=5m
 kubectl -n kube-system delete daemonset kindnet --ignore-not-found
