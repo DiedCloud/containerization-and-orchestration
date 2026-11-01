@@ -71,3 +71,19 @@ DNS открыт и stranger: возможность разрешить имя �
 Для DNS открыл UDP и TCP 53 к Pod CoreDNS из kube-system. Дополнительный [CiliumNetworkPolicy](shop/templates/dns-observability.yaml) направляет эти DNS-запросы через DNS proxy Cilium и разрешает `matchPattern: "*"`: это даёт Hubble запросы и коды ответов, при этом остальные маршруты остаются L3/L4 NetworkPolicy. Без DNS proxy наличие опции `dns` у exporter само по себе не создаёт DNS-метрики.
 
 В первой проверке прикладные соединения совпали с матрицей, но CNPG перестал обновлять lease: egress к IP API Kubernetes попадал под default-deny. В Cilium IPBlock по умолчанию не выбирает идентичности нод. Добавил `policyCIDRMatchMode: [nodes]` и точный IP control-plane в разрешённые API-server CIDR; после применения перезапустил агенты, чтобы они перечитали конфигурацию. Так сохранил точное разрешение TCP 443/6443, не открывая PostgreSQL произвольный egress. Служебный путь проверял отдельно от TCP 5432: готовый ответ базы не означает исправность её оператора.
+
+## Практическая проверка матрицы
+
+[Скрипт проверки](scripts/matrix.py) выполнил 32 проверки из всех восьми работающих Pod: трёх API, двух worker, client, stranger и PostgreSQL. Проверял TCP connect с таймаутом 1 секунда, DNS lookup и отдельно TCP-соединение к DNS:53. Адреса Service брал из API Kubernetes, чтобы запрет DNS не выглядел запретом TCP к базе. В проверке API → API и worker → worker выбирал IP другой реплики; PostgreSQL → PostgreSQL — локальный loopback, который политики не изолируют.
+
+| Источник | API:8000 | worker:8000 | PostgreSQL:5432 | DNS UDP/TCP:53 |
+|---|---|---|---|---|
+| client | allow / allow | deny / deny | deny / deny | allow / allow |
+| api, все 3 Pod | deny / deny | deny / deny | allow / allow | allow / allow |
+| worker, оба Pod | deny / deny | deny / deny | allow / allow | allow / allow |
+| postgres | deny / deny | deny / deny | local / local | allow / allow |
+| stranger | deny / deny | deny / deny | deny / deny | allow / allow |
+
+В каждой ячейке ожидаемый / фактический результат. **32/32 совпали**, полный результат с именами Pod и проверенными IP — [matrix.json](evidence/matrix.json). Дополнительно POST /order из client вернул 201 с ID, CNPG снова успешно получил lease и продолжил его обновлять. На практике stranger знает DNS-имя PostgreSQL, но подключиться к TCP 5432 не может; API и worker могут.
+
+![Все проверки из каждого Pod совпали с целевой матрицей](screenshots/05-access-matrix.png)
