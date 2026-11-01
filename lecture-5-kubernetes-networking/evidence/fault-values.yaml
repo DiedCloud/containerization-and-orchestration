@@ -1,0 +1,7 @@
+{
+  "networkPolicy": {
+    "postgresLabels": {
+      "cnpg.io/cluster": "wrong-cluster"
+    }
+  }
+}

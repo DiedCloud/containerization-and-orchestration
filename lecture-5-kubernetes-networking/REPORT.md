@@ -87,3 +87,15 @@ DNS открыт и stranger: возможность разрешить имя �
 В каждой ячейке ожидаемый / фактический результат. **32/32 совпали**, полный результат с именами Pod и проверенными IP — [matrix.json](evidence/matrix.json). Дополнительно POST /order из client вернул 201 с ID, CNPG снова успешно получил lease и продолжил его обновлять. На практике stranger знает DNS-имя PostgreSQL, но подключиться к TCP 5432 не может; API и worker могут.
 
 ![Все проверки из каждого Pod совпали с целевой матрицей](screenshots/05-access-matrix.png)
+
+## Скрытая поломка: диагностика по Hubble
+
+[break.py](scripts/break.py) случайно выбирает один из четырёх overrides: неверный selector API, неверный порт PostgreSQL, закрытый DNS или неверный selector базы. Применяет его через обычный `helm upgrade -f results/fault-values.yaml`, до диагностики вариант не выводит.
+
+В этом запуске все 8 контрольных POST вернули **503 примерно за 3 секунды** ([ответы клиента](evidence/fault-client.jsonl)). API оставался Ready и отвечал на /health, то есть запрос доходил до приложения, но запись заказа не проходила. Дальше смотрел `hubble observe --namespace shop --verdict DROPPED`: видны SYN от API и worker к `shop-postgres-1:5432`, `EGRESS DENIED` и `Policy denied`. Сохранил [фрагмент потока](evidence/fault-flows.txt).
+
+![Hubble: красные связи API/worker → PostgreSQL:5432 и строки dropped](screenshots/06-hubble-blocked.png)
+
+Проверил живой Service `shop-postgres-rw`: port и targetPort оба 5432. Затем сравнил egress policies с labels настоящего Pod: разрешение выбирало `cnpg.io/cluster=wrong-cluster`, а у PostgreSQL было `cnpg.io/cluster=shop-postgres`. Порт совпадал, selector не выбирал ни одного реального адресата; default-deny блокировал соединения. Та же ошибочная метка исключала PostgreSQL и из ingress allow. Только после этого открыл [применённые values](evidence/fault-values.yaml) и подтвердил найденную причину. Это был поиск по конкретному направлению и решению dataplane, а не перебор правил.
+
+Вернул штатный selector через `upgrade.sh` без экспериментального override: он использует `--reset-values`, поэтому ошибочное значение не наследуется от предыдущей ревизии. После восстановления контрольные POST снова вернули 201, а повторная матрица — 32/32 совпадения ([matrix-restored.json](evidence/matrix-restored.json)).
