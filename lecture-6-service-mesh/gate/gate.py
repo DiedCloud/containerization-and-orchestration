@@ -12,7 +12,7 @@ NS = os.getenv('NAMESPACE', 'shop6')
 TOKEN = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 CA = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
 BASE = f'https://kubernetes.default.svc/apis/policy.linkerd.io/v1beta2/namespaces/{NS}/httproutes/shop-api'
-SELECTOR = 'namespace="shop6",direction="inbound",deployment="shop-api-v2"'
+SELECTOR = 'namespace="shop6",direction="inbound",deployment="shop-api-v2",target_port="8000",route_name!="probe"'
 
 def query(expr):
     data = json.load(urllib.request.urlopen(PROM + '/api/v1/query?' + urllib.parse.urlencode({'query':expr}), timeout=5))
