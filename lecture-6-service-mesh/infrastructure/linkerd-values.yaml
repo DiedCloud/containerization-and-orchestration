@@ -1,0 +1,8 @@
+# Small single-replica control plane; only selected shop pods are injected.
+controllerReplicas: 1
+proxy:
+  resources:
+    cpu: {request: 10m, limit: 500m}
+    memory: {request: 20Mi, limit: 128Mi}
+proxyInit:
+  runAsRoot: true
