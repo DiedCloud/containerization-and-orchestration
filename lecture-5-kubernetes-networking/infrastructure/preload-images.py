@@ -8,10 +8,24 @@ import subprocess
 root = Path(__file__).resolve().parent
 rendered = subprocess.check_output(['helm','template','cilium','cilium/cilium','--version','1.20.4',
     '-n','kube-system','-f',str(root/'cilium-values.yaml')],text=True)
-images = sorted(set(re.findall(r'image: "([^"]+)"',rendered)))
+images = set(re.findall(r'image: "([^"]+)"',rendered))
+# Recreated infrastructure may move to the other node during migration.
+workloads = json.loads(subprocess.check_output(['kubectl','get','deployment,daemonset,statefulset','-A','-o','json']))['items']
+for workload in workloads:
+    for key in ['containers','initContainers']:
+        for container in workload['spec']['template']['spec'].get(key,[]):
+            image = container['image']
+            if subprocess.run(['docker','image','inspect',image],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0:
+                images.add(image)
+images = sorted(images)
 def load(image):
     subprocess.run(['docker','pull',image],check=True)
-    subprocess.run(['kind','load','docker-image','--name','lab2',image],check=True)
+    normalized = image
+    if '/' not in image:
+        normalized = 'docker.io/library/' + image
+    elif '.' not in image.split('/')[0] and ':' not in image.split('/')[0]:
+        normalized = 'docker.io/' + image
+    subprocess.run(['kind','load','docker-image','--name','lab2',normalized],check=True)
 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
     list(pool.map(load,images))
 # Kubernetes 1.37 remembers failed pull attempts even after a manual import.

@@ -8,7 +8,7 @@ def run(*cmd):
     print(value.strip(),flush=True)
     return value
 pods=json.loads(subprocess.check_output(['kubectl','-n','shop','get','pods','-l','app.kubernetes.io/name=api','-o','json']))['items']
-pods=[p for p in pods if not p['metadata'].get('deletionTimestamp')]
+pods=[p for p in pods if not p['metadata'].get('deletionTimestamp') and p['status'].get('phase') == 'Running']
 a=pods[0];b=next(p for p in pods if p['spec']['nodeName']!=a['spec']['nodeName'])
 name=a['metadata']['name'];node=a['spec']['nodeName']
 run('kubectl','-n','shop','get','pods','-o','wide')

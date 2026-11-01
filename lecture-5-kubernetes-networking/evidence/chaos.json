@@ -1,0 +1,376 @@
+{
+  "start_utc": "2026-11-01T13:13:00.416192+00:00",
+  "requests": 1800,
+  "internal_requests": 1800,
+  "internal_failed": 0,
+  "max_start_gap_seconds": 0.10189437866210938,
+  "failed": 0,
+  "deleted_pods": 26,
+  "unique_deleted_ips": 26,
+  "windows": [
+    {
+      "second": 0,
+      "requests": 51,
+      "failed": 0
+    },
+    {
+      "second": 5,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 10,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 15,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 20,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 25,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 30,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 35,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 40,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 45,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 50,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 55,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 60,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 65,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 70,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 75,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 80,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 85,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 90,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 95,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 100,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 105,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 110,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 115,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 120,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 125,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 130,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 135,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 140,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 145,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 150,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 155,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 160,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 165,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 170,
+      "requests": 50,
+      "failed": 0
+    },
+    {
+      "second": 175,
+      "requests": 49,
+      "failed": 0
+    }
+  ],
+  "events": [
+    {
+      "time": 1793538779.4131033,
+      "pod": "shop-worker-569bc4cd6f-bw7m6",
+      "uid": "158db845-359e-494c-b7aa-1a8bb768922e",
+      "ip": "10.244.0.92",
+      "component": "worker"
+    },
+    {
+      "time": 1793538786.6092649,
+      "pod": "shop-api-846d9db8cf-82bvn",
+      "uid": "1c7f798a-6082-4790-8aea-671b557095bc",
+      "ip": "10.244.1.157",
+      "component": "api"
+    },
+    {
+      "time": 1793538793.7959974,
+      "pod": "shop-api-846d9db8cf-gp55w",
+      "uid": "5bf87b38-695d-4b1e-9d93-cd8451fbc74b",
+      "ip": "10.244.0.143",
+      "component": "api"
+    },
+    {
+      "time": 1793538800.9825408,
+      "pod": "shop-api-846d9db8cf-m8zlp",
+      "uid": "689481eb-3638-406e-bbd7-6ab04eff86a9",
+      "ip": "10.244.0.211",
+      "component": "api"
+    },
+    {
+      "time": 1793538808.1767528,
+      "pod": "shop-api-846d9db8cf-zv2mc",
+      "uid": "4fb534b3-2f30-400e-9171-a2f23466cd89",
+      "ip": "10.244.1.29",
+      "component": "api"
+    },
+    {
+      "time": 1793538815.358661,
+      "pod": "shop-api-846d9db8cf-z2k5c",
+      "uid": "655e2e20-de9f-4bc3-b7f7-5392371fa0da",
+      "ip": "10.244.0.214",
+      "component": "api"
+    },
+    {
+      "time": 1793538822.5434594,
+      "pod": "shop-worker-569bc4cd6f-6q98x",
+      "uid": "0aab32e1-18c9-4f2b-a38d-9b82e4090448",
+      "ip": "10.244.1.164",
+      "component": "worker"
+    },
+    {
+      "time": 1793538829.7140272,
+      "pod": "shop-api-846d9db8cf-zz7t4",
+      "uid": "52dd5c0c-833b-4bc2-8d95-b6f8ea68108b",
+      "ip": "10.244.0.189",
+      "component": "api"
+    },
+    {
+      "time": 1793538836.9278631,
+      "pod": "shop-worker-569bc4cd6f-24q8x",
+      "uid": "adaefc25-d70a-4ac4-818f-01de7dcaf39a",
+      "ip": "10.244.1.193",
+      "component": "worker"
+    },
+    {
+      "time": 1793538844.1110902,
+      "pod": "shop-api-846d9db8cf-kxkh2",
+      "uid": "912dfca4-58ff-4df1-a7b5-17557d6ac325",
+      "ip": "10.244.1.102",
+      "component": "api"
+    },
+    {
+      "time": 1793538851.2842097,
+      "pod": "shop-api-846d9db8cf-4sk8w",
+      "uid": "af0f7f14-7ef9-4d1a-a63b-309d0d44001e",
+      "ip": "10.244.0.27",
+      "component": "api"
+    },
+    {
+      "time": 1793538858.4754143,
+      "pod": "shop-api-846d9db8cf-5zwqk",
+      "uid": "38236332-a07c-4f25-912a-47248cbdee55",
+      "ip": "10.244.0.26",
+      "component": "api"
+    },
+    {
+      "time": 1793538865.6637971,
+      "pod": "shop-api-846d9db8cf-bch56",
+      "uid": "a2c5b1c5-f3ca-4a4c-b82a-277080698f37",
+      "ip": "10.244.1.214",
+      "component": "api"
+    },
+    {
+      "time": 1793538872.8360517,
+      "pod": "shop-api-846d9db8cf-7fpvf",
+      "uid": "a2a32ce1-50e4-4dc9-8b09-8b9230579bf0",
+      "ip": "10.244.0.149",
+      "component": "api"
+    },
+    {
+      "time": 1793538880.0274794,
+      "pod": "shop-worker-569bc4cd6f-6zxh4",
+      "uid": "62288622-0500-44d3-bf53-ff0216b8a765",
+      "ip": "10.244.0.33",
+      "component": "worker"
+    },
+    {
+      "time": 1793538887.2059941,
+      "pod": "shop-worker-569bc4cd6f-hwjbs",
+      "uid": "d1c1d882-f3c4-4c01-bd05-0e3e765e0fc1",
+      "ip": "10.244.0.248",
+      "component": "worker"
+    },
+    {
+      "time": 1793538894.3780406,
+      "pod": "shop-api-846d9db8cf-gcfmz",
+      "uid": "65fad91d-f964-4400-ad90-0821a21a4aba",
+      "ip": "10.244.1.88",
+      "component": "api"
+    },
+    {
+      "time": 1793538901.5520287,
+      "pod": "shop-worker-569bc4cd6f-tlhlw",
+      "uid": "78107a8e-2a60-4649-818c-2cbeb871a214",
+      "ip": "10.244.1.138",
+      "component": "worker"
+    },
+    {
+      "time": 1793538908.728243,
+      "pod": "shop-api-846d9db8cf-jc9dx",
+      "uid": "a5d9a031-9244-4bc5-b5ae-a3e45aecde7f",
+      "ip": "10.244.1.70",
+      "component": "api"
+    },
+    {
+      "time": 1793538915.9110086,
+      "pod": "shop-api-846d9db8cf-bdf58",
+      "uid": "9f333367-5656-48c3-8b97-d60d9ef4284e",
+      "ip": "10.244.0.93",
+      "component": "api"
+    },
+    {
+      "time": 1793538923.0924454,
+      "pod": "shop-worker-569bc4cd6f-fhtrd",
+      "uid": "57aa429e-a70f-499e-b1fb-a35951277e99",
+      "ip": "10.244.0.57",
+      "component": "worker"
+    },
+    {
+      "time": 1793538930.270434,
+      "pod": "shop-worker-569bc4cd6f-gpfm7",
+      "uid": "b238dbb9-a5c8-418b-b325-8b9d73cc4c26",
+      "ip": "10.244.0.106",
+      "component": "worker"
+    },
+    {
+      "time": 1793538937.4707737,
+      "pod": "shop-worker-569bc4cd6f-jhrwq",
+      "uid": "9d02c81a-b92e-401d-a087-f0fce06d3798",
+      "ip": "10.244.1.77",
+      "component": "worker"
+    },
+    {
+      "time": 1793538944.6605322,
+      "pod": "shop-api-846d9db8cf-wm8p7",
+      "uid": "08b1bf32-f709-4cd0-8514-a1f5dd1608be",
+      "ip": "10.244.1.254",
+      "component": "api"
+    },
+    {
+      "time": 1793538951.8131168,
+      "pod": "shop-worker-569bc4cd6f-9xfsp",
+      "uid": "366fb92c-b333-4099-b14b-2aa5e885d5d8",
+      "ip": "10.244.1.90",
+      "component": "worker"
+    },
+    {
+      "time": 1793538958.9967325,
+      "pod": "shop-api-846d9db8cf-zvcng",
+      "uid": "fc1f1840-a40d-4967-986e-60f0c86a3cdd",
+      "ip": "10.244.0.31",
+      "component": "api"
+    }
+  ]
+}

@@ -10,10 +10,19 @@ helm upgrade --install cilium cilium/cilium --version 1.20.4 \
 kubectl -n kube-system rollout status daemonset/cilium --timeout=5m
 kubectl -n kube-system delete daemonset kindnet --ignore-not-found
 # Cilium installs 05-cilium.conflist and makes the old configuration inactive.
-# Existing non-hostNetwork pods must acquire Cilium endpoints as well.
+# Restart only old, unmanaged pods; already migrated endpoints are retained.
 kubectl get pods -A -o json | python3 -c '
 import json, subprocess, sys
-for p in json.load(sys.stdin)["items"]:
-    if not p["spec"].get("hostNetwork") and p["status"].get("phase") not in ("Succeeded", "Failed") and not p["metadata"]["name"].startswith("cilium"):
-        subprocess.run(["kubectl", "-n", p["metadata"]["namespace"], "delete", "pod", p["metadata"]["name"], "--wait=false"], check=True)
+pods = json.load(sys.stdin)["items"]
+endpoints = json.loads(subprocess.check_output(["kubectl", "get", "ciliumendpoints", "-A", "-o", "json"]))["items"]
+managed = {(p["metadata"]["namespace"], p["metadata"]["name"]) for p in endpoints}
+for namespace in ["kube-system", "kyverno", "cnpg-system", "local-path-storage", "default", "monitoring", "shop"]:
+    for p in pods:
+        m = p["metadata"]
+        if m["namespace"] != namespace or (namespace, m["name"]) in managed:
+            continue
+        if not p["spec"].get("hostNetwork") and p["status"].get("phase") not in ("Succeeded", "Failed") and not m["name"].startswith("cilium"):
+            subprocess.run(["kubectl", "-n", namespace, "delete", "pod", m["name"], "--wait=false"], check=True)
+    if namespace in ("kyverno", "cnpg-system"):
+        subprocess.run(["kubectl", "-n", namespace, "rollout", "status", "deployment", "--timeout=3m"], check=True)
 '
