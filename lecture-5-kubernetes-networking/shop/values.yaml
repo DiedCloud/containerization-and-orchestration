@@ -90,7 +90,7 @@ priorities:
 pdb:
   enabled: true
 networkPolicy:
-  enabled: false
+  enabled: true
   dnsEnabled: true
   dnsNamespace: kube-system
   dnsLabels: {k8s-app: kube-dns}
@@ -101,7 +101,8 @@ networkPolicy:
   postgresLabels: {cnpg.io/cluster: shop-postgres}
   databasePort: 5432
   monitoringNamespace: monitoring
+  monitoringLabels: {app.kubernetes.io/name: prometheus}
   operatorNamespace: cnpg-system
   operatorPort: 8000
-  apiServerCIDRs: [10.96.0.1/32]
+  apiServerCIDRs: [10.96.0.1/32, 172.20.0.2/32]
   nodeCIDRs: [172.20.0.1/32, 172.20.0.2/32, 172.20.0.3/32]

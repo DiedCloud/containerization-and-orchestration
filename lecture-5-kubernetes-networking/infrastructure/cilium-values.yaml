@@ -28,10 +28,10 @@ hubble:
         pullPolicy: Never
   metrics:
     enabled:
-    - dns:query;ignoreAAAA
-    - drop
-    - tcp
-    - flow
+    - dns:query;ignoreAAAA;sourceContext=namespace;destinationContext=namespace
+    - drop:sourceContext=namespace;destinationContext=namespace
+    - tcp:sourceContext=namespace;destinationContext=namespace
+    - flow:sourceContext=namespace;destinationContext=namespace
 prometheus:
   enabled: true
 image:
@@ -41,3 +41,6 @@ envoy:
   image:
     useDigest: false
     pullPolicy: Never
+# Let the explicit API-server/node CIDRs match Cilium node identities too.
+policyCIDRMatchMode:
+  - nodes

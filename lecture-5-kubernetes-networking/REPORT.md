@@ -63,3 +63,11 @@ API доступен снаружи через NodePort 30080. NodePort откр
 DNS открыт и stranger: возможность разрешить имя не даёт права подключиться к полученному IP. Произвольный egress в интернет закрыт. Разрешение DNS само по себе не ограничивает утечку через DNS — это ограничение этой L3/L4 модели.
 
 Инфраструктурные исключения вынес отдельно: внешний клиент через NodePort → API:8000; Prometheus из namespace monitoring → API/worker:8000; оператор из cnpg-system → instance manager PostgreSQL:8000; PostgreSQL → Kubernetes API:443/6443 для lease и состояния CNPG. Разрешены конкретные node/host CIDR, PodCIDR в них не включён. Kubelet probes с ноды — доверенная инфраструктура. Политики не являются защитой от администратора, который может менять метки и сами правила.
+
+## Zero-trust в chart
+
+Добавил [шаблоны NetworkPolicy](shop/templates/networkpolicies.yaml): default-deny выбирает все Pod namespace и закрывает оба направления, а отдельные правила открывают маршруты из матрицы. Labels, DNS namespace/порт, порт PostgreSQL, параметры мониторинга и адреса инфраструктуры передаются через [values.yaml](shop/values.yaml). Для связи API/worker с базой нужны сразу ingress базы и egress источника. Политики складываются как объединение разрешений: ещё одно deny-правило не отменяет уже существующий allow.
+
+Для DNS открыл UDP и TCP 53 к Pod CoreDNS из kube-system. Дополнительный [CiliumNetworkPolicy](shop/templates/dns-observability.yaml) направляет эти DNS-запросы через DNS proxy Cilium и разрешает `matchPattern: "*"`: это даёт Hubble запросы и коды ответов, при этом остальные маршруты остаются L3/L4 NetworkPolicy. Без DNS proxy наличие опции `dns` у exporter само по себе не создаёт DNS-метрики.
+
+В первой проверке прикладные соединения совпали с матрицей, но CNPG перестал обновлять lease: egress к IP API Kubernetes попадал под default-deny. В Cilium IPBlock по умолчанию не выбирает идентичности нод. Добавил `policyCIDRMatchMode: [nodes]` и точный IP control-plane в разрешённые API-server CIDR; после применения перезапустил агенты, чтобы они перечитали конфигурацию. Так сохранил точное разрешение TCP 443/6443, не открывая PostgreSQL произвольный egress. Служебный путь проверял отдельно от TCP 5432: готовый ответ базы не означает исправность её оператора.
